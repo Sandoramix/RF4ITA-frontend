@@ -17,7 +17,7 @@
 </script>
 
 <aside class={visible ? `` : `hidden`}>
-	<h1 class="text-center dropdown-bottom-border active">Maps</h1>
+	<h1 class="text-center">Maps</h1>
 
 	<div class="category-list">
 		{#each mapList as map}
@@ -68,6 +68,7 @@
 	}
 
 	aside {
+		user-select: none;
 		color: white;
 		top: var(--header-height);
 		position: fixed;
@@ -85,6 +86,9 @@
 		overflow-x: hidden;
 		transform: translateX(0);
 		transition: transform 0.5s ease-in-out, width 0.5s ease-in-out;
+		box-shadow: 0 0 10px 5px #000000;
+
+		clip-path: inset(0px 0px 0px -10px);
 	}
 	aside::-webkit-scrollbar-thumb,
 	aside *::-webkit-scrollbar-thumb {
@@ -97,11 +101,10 @@
 
 	aside.hidden {
 		transform: translateX(150%);
+		box-shadow: none;
 	}
 
 	.category-list {
-		border-top-left-radius: 0;
-		border-top-right-radius: 0;
 		overflow-x: hidden;
 		display: flex;
 		flex-direction: column;
@@ -134,10 +137,5 @@
 
 	.category-list__item.active {
 		background-color: var(--accent-color);
-	}
-
-	.dropdown-bottom-border {
-		border-bottom-left-radius: 0 !important;
-		border-bottom-right-radius: 0 !important;
 	}
 </style>
