@@ -1,7 +1,8 @@
-<script lang="ts">
+<script>
 	import DrawPanel from "./DrawPanel.svelte";
 	import L from "leaflet";
 	import { onMount } from "svelte";
+	import { api } from "../extra";
 
 	var currentMap;
 
@@ -51,10 +52,10 @@
 		MAP_CNT = document.querySelector(`#map-container`);
 		LEAFLET_MAP = document.querySelector(`#map`);
 		COORDS_CONTENT = document.querySelector(`#coords`);
-		SEARCH_LATLNG_BTN.addEventListener(`click`, () => coordsSearchHandler(true));
+		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true));
 	});
 
-	export function updateMap(map) {
+	export async function updateMap(map) {
 		currentMap = map;
 		if (!map || !currentMap) return;
 
@@ -68,7 +69,7 @@
 			leafletMap.remove();
 		}
 
-		mapTileLayer = L.tileLayer(`http://localhost/api/maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
+		mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
 			minZoom: 0,
 			maxZoom: 2,
 			noWrap: true,
@@ -86,53 +87,60 @@
 			infinite: false,
 		});
 
-		var obj = document.createElement("object");
+		let obj = document.createElement("object");
 		obj.type = "image/svg+xml";
-		obj.data = `http://localhost/api/maps/${currentMap.name}/ground`;
+		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
 
-		var grOverlay = L.svgOverlay(obj, OUTER_BOUNDS);
+		var allLayers = [mapTileLayer];
 
-		var allLayers = [mapTileLayer, grOverlay];
+		if (get.status != 404) {
+			obj.data = `${api}maps/${currentMap.name}/ground`;
 
-		leafletMap = L.map("map", {
+			var grOverlay = L.svgOverlay(obj, OUTER_BOUNDS);
+			allLayers.push(grOverlay);
+		}
+
+		leafletMap = L.map(MAP_CNT, {
 			crs: customCRS,
 			layers: allLayers,
 			maxBounds: OUTER_BOUNDS,
 			doubleClickZoom: false,
 		}).setView([0, 0], 1);
 
-		L.control
-			.layers(
-				{},
-				{
-					Ground: grOverlay,
-				},
-			)
-			.setPosition("topleft")
-			.addTo(leafletMap);
+		if (get.status != 404) {
+			L.control
+				.layers(
+					{},
+					{
+						Ground: grOverlay,
+					},
+				)
+				.setPosition("topleft")
+				.addTo(leafletMap);
+		}
 
 		leafletMap.on("click", (ev) => {
 			y = ev.latlng.lat;
 			x = ev.latlng.lng;
 
-			if (!coordsInBounds(x, y)) return;
+			if (!isCoordsInBounds(x, y)) return;
 
-			newUserMarksHandler(ev.latlng);
+			createUserMarkerHandler(ev.latlng);
 		});
 
 		leafletMap.on("mousemove", (ev) => {
 			y = IMG_OUTER_SIZE - ev.latlng.lat;
 			x = ev.latlng.lng;
 
-			let check = coordsInBounds(x, y);
+			let check = isCoordsInBounds(x, y);
 
-			let igX = leafletToGameCoordinate(x, xRatio, currentMap.limits.x);
-			let igY = leafletToGameCoordinate(y, yRatio, currentMap.limits.y);
+			let igX = mapToGameCoord(x, xRatio, currentMap.limits.x);
+			let igY = mapToGameCoord(y, yRatio, currentMap.limits.y);
 
 			COORDS_CONTENT.textContent = `${check ? `${igX}:${igY}` : `-:-`}`;
 			if (!check) return;
 			if (userFirstMark && !userSecondMark) {
-				updatePolyLine(ev.latlng);
+				updatePolyline(ev.latlng);
 			}
 		});
 	}
@@ -147,41 +155,41 @@
 		return marker;
 	}
 
-	function leafletToGameCoordinate(coord, ratio, limits) {
+	function mapToGameCoord(coord, ratio, limits) {
 		return Math.round((coord - IMG_MIN_INNER_PX) / ratio + limits.min);
 	}
-	function gameToLeafletCoordinate(coord, ratio, limits, isY = false) {
+	function gameToMapCoord(coord, ratio, limits, isY = false) {
 		let tmp = (coord - limits.min) * ratio + IMG_MIN_INNER_PX;
 		return isY ? IMG_OUTER_SIZE - tmp : tmp;
 	}
 
-	function coordsInBounds(x, y) {
+	function isCoordsInBounds(x, y) {
 		return x >= IMG_MIN_INNER_PX && x <= IMG_MAX_INNER_PX && y >= IMG_MIN_INNER_PX && y <= IMG_MAX_INNER_PX;
 	}
 
-	function coordsSearchHandler(flag = false) {
+	function searchCoordsHandler(flag = false) {
 		let igX = parseInt(SEARCH_LNG.value);
 		let igY = parseInt(SEARCH_LAT.value);
 
-		let goodCoords = checkSearchCoords(igX, currentMap.limits.x, SEARCH_LNG);
-		goodCoords = goodCoords && checkSearchCoords(igY, currentMap.limits.y, SEARCH_LAT);
+		let goodCoords = searchCoordInBounds(igX, currentMap.limits.x, SEARCH_LNG);
+		goodCoords = goodCoords && searchCoordInBounds(igY, currentMap.limits.y, SEARCH_LAT);
 
 		if (!goodCoords) return;
 
 		SEARCH_LNG.value = ``;
 		SEARCH_LAT.value = ``;
 
-		let mapX = gameToLeafletCoordinate(igX, xRatio, currentMap.limits.x),
-			mapY = gameToLeafletCoordinate(igY, yRatio, currentMap.limits.y, true);
-		if (!coordsInBounds(mapX, mapY)) return;
+		let mapX = gameToMapCoord(igX, xRatio, currentMap.limits.x),
+			mapY = gameToMapCoord(igY, yRatio, currentMap.limits.y, true);
+		if (!isCoordsInBounds(mapX, mapY)) return;
 
 		if (userSecondMark) {
-			newUserMarksHandler(L.latLng(mapY, mapX));
+			createUserMarkerHandler(L.latLng(mapY, mapX));
 		}
-		newUserMarksHandler(L.latLng(mapY, mapX));
+		createUserMarkerHandler(L.latLng(mapY, mapX));
 	}
 
-	function newUserMarksHandler(latlng) {
+	function createUserMarkerHandler(latlng) {
 		if (userFirstMark && userSecondMark) {
 			userFirstMark.removeFrom(leafletMap);
 			userSecondMark.removeFrom(leafletMap);
@@ -191,12 +199,12 @@
 			return;
 		}
 
-		let igx = leafletToGameCoordinate(latlng.lng, xRatio, currentMap.limits.x),
-			igy = leafletToGameCoordinate(IMG_OUTER_SIZE - latlng.lat, yRatio, currentMap.limits.y);
+		let igx = mapToGameCoord(latlng.lng, xRatio, currentMap.limits.x),
+			igy = mapToGameCoord(IMG_OUTER_SIZE - latlng.lat, yRatio, currentMap.limits.y);
 
 		if (userFirstMark) {
 			userSecondMark = newCircleMarker(latlng, 8, `${igx}:${igy}`, `#40FF40`).addTo(leafletMap);
-			updatePolyLine(latlng);
+			updatePolyline(latlng);
 
 			return;
 		}
@@ -209,25 +217,25 @@
 		userMarksLine.openTooltip();
 	}
 
-	function updatePolyLine(latlng, offset = 0) {
+	function updatePolyline(latlng, offset = 0) {
 		if (!userFirstMark) return;
-		let midpoint = latlngMidPoint(userFirstMark.getLatLng(), latlng);
+		let midpoint = midpointBetweenLatlng(userFirstMark.getLatLng(), latlng);
 
-		let direction = getDirection(latlng);
+		let direction = getOrientation(latlng);
 
 		let lat = latlng.lat,
 			lng = latlng.lng;
 		lat = direction.includes("N") ? lat + offset : lat - offset;
 		lng = direction.includes("E") ? lng - offset : lng + offset;
 
-		userMarksLine.setLatLngs([userFirstMark.getLatLng(), newLatlng(lat, lng)]);
+		userMarksLine.setLatLngs([userFirstMark.getLatLng(), L.latLng(lat, lng)]);
 
-		let distance = distanceBetweenTwoPoints(userFirstMark.getLatLng(), latlng, IG_MAP_SQUARE_LENGTH / currentMap.square_distance);
+		let distance = distanceBetweenPoints(userFirstMark.getLatLng(), latlng, IG_MAP_SQUARE_LENGTH / currentMap.square_distance);
 
 		polylineTooltip.setLatLng(midpoint).setContent(`Distance: <b>${distance}m</b> <em><b>${distance !== 0 ? direction : ``}</b></em>`);
 	}
 
-	function getDirection(latlng2) {
+	function getOrientation(latlng2) {
 		let currDirection = "";
 		if (!userFirstMark) return currDirection;
 		let latlng1 = userFirstMark.getLatLng();
@@ -235,17 +243,15 @@
 		currDirection += latlng1.lng < latlng2.lng ? "E" : "W";
 		return currDirection;
 	}
-	function newLatlng(lat, lng) {
-		return L.latLng(lat, lng);
+
+	function distanceBetweenPoints(point_a, point_b, divider) {
+		return Math.round(Math.sqrt(Math.pow(point_b.lat - point_a.lat, 2) + Math.pow(point_b.lng - point_a.lng, 2)) / divider);
 	}
-	function distanceBetweenTwoPoints(a, b, unit) {
-		return Math.round(Math.sqrt(Math.pow(b.lat - a.lat, 2) + Math.pow(b.lng - a.lng, 2)) / unit);
-	}
-	function latlngMidPoint(latlng1, latlng2) {
+	function midpointBetweenLatlng(latlng1, latlng2) {
 		return L.latLng((latlng1.lat + latlng2.lat) / 2, (latlng1.lng + latlng2.lng) / 2);
 	}
 
-	function checkSearchCoords(coord, limits, element) {
+	function searchCoordInBounds(coord, limits, element) {
 		if (coord > limits.max || coord < limits.min) {
 			element.classList.add(`red-border`);
 			return false;
@@ -255,7 +261,7 @@
 		return true;
 	}
 
-	const toggleMapUse = () => {
+	const mapDragToggler = () => {
 		if (leafletMap.dragging.enabled()) {
 			return leafletMap.dragging.disable();
 		}
@@ -264,9 +270,9 @@
 </script>
 
 <div id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
-	<DrawPanel on:map_toggle={toggleMapUse} />
+	<DrawPanel on:map_toggle={mapDragToggler} />
 	<div id="map-header">
-		<span id="coords" class="shadow">-:-</span>
+		<span id="coords" class="shadow {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">-:-</span>
 		<div id="search" class="shadow">
 			<span>Coordinate search:</span>
 			<input type="number" name="x" id="search-x" class="search" maxlength="3" bind:this={SEARCH_LNG} />
@@ -279,7 +285,8 @@
 	<div class="leaflet-popup-tip-container  leaflet-tooltip leaflet-tooltip" style="display: none !important;" />
 </div>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" /> -->
+<link rel="stylesheet" href="http://localhost/leaflet/leaflet.css" />
 
 <style>
 	#map-container * {
@@ -301,7 +308,6 @@
 		width: 600px;
 		height: 600px;
 		user-select: none;
-		z-index: 200;
 	}
 
 	#map-header {
@@ -311,7 +317,7 @@
 		width: 400px;
 		height: 40px;
 		background-color: transparent;
-		z-index: 300;
+		z-index: 500;
 		display: flex;
 		justify-content: end;
 		align-items: center;
@@ -329,6 +335,9 @@
 		font-size: 150%;
 		box-shadow: 0 0 1px inset darkgray;
 		margin-right: 0.5rem;
+	}
+	#coords.no-select {
+		user-select: none;
 	}
 
 	.crosshair-cursor {
@@ -373,7 +382,9 @@
 	}
 
 	/*----------------------------------------------*/
-
+	:global(.leaflet-control-container) {
+		user-select: none;
+	}
 	.leaflet-popup-tip-container {
 		display: none;
 	}
