@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	const timeratio = 2.5;
 	const igMinuteOffset = 4;
 	var hour = `00`,
