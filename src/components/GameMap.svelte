@@ -100,7 +100,7 @@
 			allLayers.push(grOverlay);
 		}
 
-		leafletMap = L.map(MAP_CNT, {
+		leafletMap = L.map(`map`, {
 			crs: customCRS,
 			layers: allLayers,
 			maxBounds: OUTER_BOUNDS,
@@ -119,14 +119,7 @@
 				.addTo(leafletMap);
 		}
 
-		leafletMap.on("click", (ev) => {
-			y = ev.latlng.lat;
-			x = ev.latlng.lng;
-
-			if (!isCoordsInBounds(x, y)) return;
-
-			createUserMarkerHandler(ev.latlng);
-		});
+		leafletMap.on("click", onLeafletMapClick);
 
 		leafletMap.on("mousemove", (ev) => {
 			y = IMG_OUTER_SIZE - ev.latlng.lat;
@@ -144,7 +137,14 @@
 			}
 		});
 	}
+	function onLeafletMapClick(ev) {
+		y = ev.latlng.lat;
+		x = ev.latlng.lng;
 
+		if (!isCoordsInBounds(x, y)) return;
+
+		createUserMarkerHandler(ev.latlng);
+	}
 	function newCircleMarker(latlng, radius = 10, tooltipContent = null, color = `#3388ff`) {
 		let marker = L.circleMarker(latlng, { radius, color });
 		if (tooltipContent) {
@@ -285,8 +285,7 @@
 	<div class="leaflet-popup-tip-container  leaflet-tooltip leaflet-tooltip" style="display: none !important;" />
 </div>
 
-<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" /> -->
-<link rel="stylesheet" href="http://localhost/leaflet/leaflet.css" />
+<link rel="stylesheet" href="https://ita.russianfishing.repl.co/leaflet/leaflet.css" />
 
 <style>
 	#map-container * {
@@ -308,6 +307,8 @@
 		width: 600px;
 		height: 600px;
 		user-select: none;
+		z-index: 300;
+		position: relative;
 	}
 
 	#map-header {
@@ -317,13 +318,14 @@
 		width: 400px;
 		height: 40px;
 		background-color: transparent;
-		z-index: 500;
+		z-index: 600;
 		display: flex;
 		justify-content: end;
 		align-items: center;
-		padding: 0.5rem;
+		padding: 0.25rem;
 		overflow: hidden;
 		border-radius: 5px 0 0 5px;
+		user-select: none;
 	}
 
 	#coords {
@@ -336,21 +338,18 @@
 		box-shadow: 0 0 1px inset darkgray;
 		margin-right: 0.5rem;
 	}
-	#coords.no-select {
-		user-select: none;
-	}
 
 	.crosshair-cursor {
 		cursor: crosshair !important;
 	}
 
 	#search {
-		user-select: none;
 		border-radius: 10px;
 		display: flex;
 		background-color: #ffffff9c;
 		padding: 0.5rem;
 		gap: 0.25rem;
+		z-index: 600;
 	}
 
 	.shadow {
