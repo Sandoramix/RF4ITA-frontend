@@ -71,24 +71,28 @@
 <main>
 	{#if currentMapFishes.length != 0 || currentMapTrophies.length != 0}
 		<div class="left">
-			<div class="left-item">
-				<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-					<MapTrophies map_trophies={currentMapTrophies} />
-				</div>
+			{#if currentMapTrophies.length != 0}
+				<div class="left-item">
+					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
+						<MapTrophies map_trophies={currentMapTrophies} />
+					</div>
 
-				<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
-					T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `<` : `>`}</span>
+					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
+						T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `<` : `>`}</span>
+					</div>
 				</div>
-			</div>
-			<div class="left-item">
-				<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-					<MapFishes map_fishes={currentMapFishes} map_fishes_filtered={currentMapFishes} />
-				</div>
+			{/if}
+			{#if currentMapFishes.length != 0}
+				<div class="left-item">
+					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
+						<MapFishes map_fishes={currentMapFishes} map_fishes_filtered={currentMapFishes} />
+					</div>
 
-				<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
-					F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `<` : `>`}</span>
+					<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
+						F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `<` : `>`}</span>
+					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	{/if}
 	<div id="page">
