@@ -29,29 +29,32 @@ body {
     color: var(--primary-color);
     margin: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    background-color: #00245a
+    font-family: BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    background-color: #2e0049de
 }
 
 :root {
     --primary-color: white;
-    --contrast-color: #00af00;
-    --accent-color: #4e0272;
+    --contrast-color: #00ff37;
+    --contrast-dark-color: #006d18;
+    --accent-color: #6200be;
+    --accent-dark-color: #06000c;
     --sub-color: #0e0042;
     --accent-contrast-color: black;
     --header-height: 80px;
-    --header-bg: #0A0B0F;
+    --header-bg: #100018;
     --header-text: white;
     --sidebar-bg: black;
     --sidebar-width: 0px;
-    --homepage-width: calc(100vw - var(--sidebar-width))
+    --homepage-width: calc(100vw - var(--sidebar-width));
+    --orange: #e67a00;
 }
 
 
 /* -------------------- */
 
 .red-border {
-    border: 1px solid red;
+    border: 1px solid red !important;
 }
 
 .flex {
