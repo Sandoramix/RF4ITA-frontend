@@ -1,54 +1,24 @@
 <script>
-	import Adminpanel from "./components/Adminpanel.svelte";
-	import { api, user, getCookie, setCookie } from "./main";
+	import MapTrophies from "./components/MapTrophies.svelte";
+	import { api, getCookie, setCookie } from "./extra";
 
 	import Header from "./components/Header.svelte";
 
 	import { onMount } from "svelte";
-	import Authme from "./components/Authme.svelte";
 
 	import GameMap from "./components/GameMap.svelte";
 	import Sidebar from "./components/Sidebar.svelte";
-
-	$: loggedIn = $user.access_token != null;
+	import MapFishes from "./components/MapFishes.svelte";
 
 	var gameMap,
-		editorMode = true,
-		isAuthenticating = false,
 		sidebarActive = false,
 		currentMapName = "",
-		mapList;
+		mapList,
+		currentMap,
+		currentMapTrophies,
+		currentMapFishes;
 
-	mapList = [];
-
-	async function loginFromCookie() {
-		let _tk = getCookie(`token`) || false;
-		let get = await fetch(`${api}auth/login`, {
-			method: "POST",
-			headers: new Headers({
-				Authorization: `Bearer ${_tk}`,
-			}),
-		});
-		let data = await get.json();
-		let res = data.user;
-		if (res) {
-			$user.access_token = res.access_token;
-		} else {
-			$user = {
-				access_token: null,
-				email: null,
-				id: null,
-			};
-		}
-	}
-	function logout() {
-		$user = {
-			access_token: null,
-			email: null,
-			id: null,
-		};
-		document.cookie = "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-	}
+	mapList = currentMapTrophies = currentMapFishes = [];
 
 	//INITIAL LOAD
 	onMount(async () => {
@@ -57,22 +27,32 @@
 
 		mapList = data.results;
 
-		console.log(mapList);
-		await loginFromCookie();
 		init();
 
 		//TODO REMOVE
-		updateCurrentMap({ detail: `thecottagepond` });
+		// updateCurrentMap({ detail: `belayariver` });
 	});
 
 	//SYNC INITIAL LOAD
 	const init = () => {};
 
-	const updateCurrentMap = (ev) => {
+	const updateCurrentMap = async (ev) => {
 		let find = mapList?.find((m) => m.name === ev.detail);
-		let currentMap = find;
+		currentMap = find;
 		currentMapName = currentMap.formatted_name;
 		gameMap.updateMap(currentMap);
+		let get = await fetch(`${api}fishes/${currentMap.name}/trophies`);
+		if (get.status == 200) {
+			get = await get.json();
+			currentMapTrophies = get.results;
+		}
+
+		get = await fetch(`${api}fishes/${currentMap.name}`);
+		if (get.status == 200) {
+			get = await get.json();
+
+			currentMapFishes = get.results;
+		}
 	};
 
 	const sidebarToggleHandler = () => {
@@ -81,40 +61,48 @@
 	};
 
 	setTimeout(sidebarToggleHandler, 200);
+
+	var trophiesToggler = false;
+	var fishesToggler = false;
 </script>
 
+<Header on:sidebarToggle={sidebarToggleHandler} />
+
 <main>
-	{#if isAuthenticating}
-		<Authme visible={isAuthenticating} on:exit={() => (isAuthenticating = false)} />
-	{/if}
+	{#if currentMapFishes.length != 0 || currentMapTrophies.length != 0}
+		<div class="left">
+			<div class="left-item">
+				<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
+					<MapTrophies map_trophies={currentMapTrophies} />
+				</div>
 
-	<Header on:sidebarToggle={sidebarToggleHandler} />
+				<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
+					T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `<` : `>`}</span>
+				</div>
+			</div>
+			<div class="left-item">
+				<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
+					<MapFishes map_fishes={currentMapFishes} map_fishes_filtered={currentMapFishes} />
+				</div>
 
-	<div id="page">
-		<div class="admin-panel">
-			{#if loggedIn}
-				<Adminpanel />
-			{/if}
+				<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
+					F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `<` : `>`}</span>
+				</div>
+			</div>
 		</div>
-
+	{/if}
+	<div id="page">
 		<div id="gmap">
-			<GameMap bind:this={gameMap} {editorMode} />
+			<GameMap bind:this={gameMap} />
 		</div>
 	</div>
 
-	<Sidebar
-		visible={sidebarActive}
-		{mapList}
-		{loggedIn}
-		on:change_map={updateCurrentMap}
-		on:login_click={() => (isAuthenticating = true)}
-		on:logout_click={logout}
-	/>
+	<Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
 </main>
 
 <style>
 	main {
-		height: 100%;
+		height: calc(100% - var(--header-height));
 	}
 	#page {
 		width: calc(100% - var(--sidebar-width));
@@ -124,15 +112,69 @@
 		display: flex;
 
 		align-items: center;
+		justify-content: center;
 	}
 
-	.admin-panel {
-		width: 25% !important;
-
-		height: 100%;
-		justify-self: start;
+	.left {
+		height: calc(100vh - var(--header-height));
+		min-width: 175px;
+		width: 275px;
+		align-self: baseline;
+		position: absolute;
+		z-index: 500;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 	}
+	.left-item:not(:first-child) {
+		margin-top: 0.5rem;
+	}
+	.left-item {
+		width: 100%;
+		display: flex;
+		position: relative;
+		height: 30vh;
+	}
+	.toggler {
+		height: 4rem;
+		width: 1.5rem;
+		background-color: black;
+		cursor: pointer;
+		padding: 0.25rem;
+		text-align: center;
+		writing-mode: vertical-rl;
+		text-orientation: upright;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+
+		font-weight: bold;
+		position: absolute;
+		top: 0;
+		left: 275px;
+		transition: left 0.5s ease-in-out;
+	}
+	.left-item:first-child .left-sub-item {
+		top: -65px;
+	}
+	.left-item:first-child .toggler {
+		top: -65px;
+	}
+
+	.left-sub-item {
+		position: absolute;
+
+		transform: translateX(0);
+		transition: transform 0.5s ease-in-out;
+	}
+	.left-sub-item.hidden {
+		transform: translateX(-100%);
+	}
+	.left-sub-item.hidden + .toggler {
+		left: 0px;
+	}
+
 	#gmap {
-		width: 80%;
+		z-index: 100;
+		align-self: center;
 	}
 </style>
