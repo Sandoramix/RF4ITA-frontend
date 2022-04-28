@@ -1,9 +1,9 @@
-<script lang="ts">
+<script>
 	import { createEventDispatcher, onMount } from "svelte";
 
 	const dispatch = createEventDispatcher();
 
-	var drawToolsContainer, drawColorBtn, drawClearBtn, drawLineSizeBtn, drawPenBtn;
+	var drawToolsContainer;
 
 	var canDraw = false;
 
@@ -64,80 +64,91 @@
 
 	onMount(() => {
 		drawToolsContainer = document.querySelector(`#draw-tools`);
-		drawColorBtn = document.querySelector(`#draw-tools__color`);
-		drawClearBtn = document.querySelector(`#draw-tools__clear`);
-		drawLineSizeBtn = document.querySelector(`#draw-tools__px`);
-		drawPenBtn = document.querySelector(`#draw-tools__pen`);
 
-		drawPenBtn.addEventListener(`click`, (ev) => {
-			canDraw = !canDraw;
-			dispatch(`map_toggle`);
-			if (!canDraw) {
-				drawingCanvas.classList.remove(`red-border`);
-				drawingCanvas.style.display = drawToolsContainer.style.display = `none`;
-
-				return clearCanvas(undefined);
-			}
-			drawToolsContainer.style.display = `flex`;
-			drawingCanvas.classList.add(`red-border`);
-			drawingCanvas.style.display = `block`;
-		});
-		drawLineSizeBtn.addEventListener(`click`, (ev) => {
-			ev.stopPropagation();
-			let currentPx = drawLineSizeBtn.textContent;
-			drawLineSizeBtn.textContent = currentPx = currentPx === `1px` ? `2px` : currentPx === `2px` ? `3px` : `1px`;
-			ctx.lineWidth = parseInt(currentPx);
-			clearCanvas(false);
-		});
-		drawClearBtn.addEventListener(`click`, (ev) => {
-			ev.stopPropagation();
-			clearCanvas(undefined);
-		});
-		drawColorBtn.addEventListener(`click`, () => {
-			let currentColor = window.getComputedStyle(drawColorBtn).backgroundColor;
-			currentColor = currentColor === `rgb(0, 0, 0)` ? `rgb(255, 0, 0)` : `rgb(0, 0, 0)`;
-			drawColorBtn.style.backgroundColor = currentColor;
-			ctx.strokeStyle = currentColor;
-			clearCanvas(false);
-		});
-
-		drawingCanvas = document.querySelector("#draw-canvas");
 		ctx = drawingCanvas.getContext("2d");
 		ctx.lineWidth = 1;
 
-		drawingCanvas.width = 650;
+		drawingCanvas.width = 600;
 		drawingCanvas.height = 600;
-
-		drawingCanvas.addEventListener(`mousedown`, startDrawing, false);
-		drawingCanvas.addEventListener(`mousemove`, drawLine, false);
-		drawingCanvas.addEventListener(`mouseup`, drawToggle, false);
-		drawingCanvas.addEventListener(`drag`, drawToggle, false);
-		drawingCanvas.addEventListener(`touchstart`, startDrawing, false);
-		drawingCanvas.addEventListener(`touchmove`, drawLine, false);
-		drawingCanvas.addEventListener(`mouseover`, () => {});
-		drawingCanvas.addEventListener(`click`, (ev) => {
-			ev.stopPropagation();
-		});
 	});
 
-	function clearCanvas(ev) {
+	const onPenClick = (ev) => {
+		draw_tools.pen.classList.toggle(`active`);
+		canDraw = !canDraw;
+		dispatch(`map_toggle`);
+		if (!canDraw) {
+			drawingCanvas.classList.remove(`red-border`);
+			drawingCanvas.style.display = drawToolsContainer.style.display = `none`;
+
+			return clearCanvas(undefined);
+		}
+		drawToolsContainer.style.display = `flex`;
+		drawingCanvas.classList.add(`red-border`);
+		drawingCanvas.style.display = `block`;
+	};
+	const onSizeClick = (ev, mclick) => {
+		ev.preventDefault();
+		ev.stopPropagation();
+
+		let currentPx = draw_tools.size.textContent;
+		if (mclick == 1) {
+			draw_tools.size.textContent = currentPx = currentPx === `1px` ? `2px` : currentPx === `2px` ? `5px` : currentPx === `3px` ? `5px` : `1px`;
+		} else {
+			draw_tools.size.textContent = currentPx = currentPx === `5px` ? `3px` : currentPx === `3px` ? `2px` : currentPx === `2px` ? `1px` : `5px`;
+		}
+
+		ctx.lineWidth = parseInt(currentPx);
+		clearCanvas(false);
+	};
+	const onColorClick = (ev) => {
+		let currentColor = window.getComputedStyle(draw_tools.color).backgroundColor;
+		currentColor = currentColor === `rgb(0, 0, 0)` ? `rgb(255, 0, 0)` : `rgb(0, 0, 0)`;
+		draw_tools.color.style.backgroundColor = currentColor;
+		ctx.strokeStyle = currentColor;
+		clearCanvas(false);
+	};
+	const onClearClick = (ev) => {
+		ev.stopPropagation();
+		clearCanvas(undefined);
+	};
+
+	const clearCanvas = (ev) => {
 		ev = ev === undefined ? true : ev;
 		ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 		!0 === ev && (drawingLines = []);
 		isDrawing = false;
 		drawAllLines();
-	}
+	};
+	var draw_tools = {
+		color: null,
+		clear: null,
+		size: null,
+		pen: null,
+	};
 </script>
 
 <div id="draw-tools__container">
 	<div id="draw-tools" style="display: none;">
-		<div id="draw-tools__color" style="background-color: black;" />
-		<div id="draw-tools__clear">X</div>
-		<div id="draw-tools__px">1px</div>
+		<div bind:this={draw_tools.color} class="tool tool-color " style="background-color: black;" on:click={onColorClick} />
+		<div bind:this={draw_tools.clear} class="tool tool-clear" on:click={onClearClick}>X</div>
+		<div bind:this={draw_tools.size} class="tool tool-size" on:click={(ev) => onSizeClick(ev, 1)} on:contextmenu={(ev) => onSizeClick(ev, 2)}>
+			1px
+		</div>
 	</div>
-	<div id="draw-tools__pen">✎</div>
+	<div bind:this={draw_tools.pen} class="tool tool-pen" on:click={onPenClick}>✎</div>
 </div>
-<canvas id="draw-canvas" style="display: none;" />
+<canvas
+	bind:this={drawingCanvas}
+	id="draw-canvas"
+	style="display: none;"
+	on:mousedown={startDrawing}
+	on:mousemove={drawLine}
+	on:mouseup={drawToggle}
+	on:drag={drawToggle}
+	on:touchstart={startDrawing}
+	on:touchmove={drawLine}
+	on:click={(ev) => ev.stopPropagation()}
+/>
 
 <style>
 	#draw-canvas {
@@ -145,7 +156,7 @@
 		top: 0;
 		left: 0;
 		position: absolute;
-		width: 650px;
+		width: 600px;
 		height: 600px;
 		background-color: transparent;
 	}
@@ -167,24 +178,33 @@
 	#draw-tools {
 		justify-content: end;
 	}
-
-	#draw-tools__pen,
-	#draw-tools__clear,
-	#draw-tools__color,
-	#draw-tools__px {
+	.tool {
 		width: 30px;
 		height: 30px;
 		border: 1px solid black;
 		line-height: 26px;
 		text-align: center;
 		font-weight: 600;
+		font-size: 20px;
+
+		user-select: none;
+		padding: 0.125rem;
 	}
 
-	#draw-tools__pen:hover,
-	#draw-tools__clear:hover,
-	#draw-tools__color:hover,
-	#draw-tools__px:hover {
+	.tool-size {
+		font-size: 15px;
+	}
+	.tool-pen {
+		color: var(--contrast-dark-color);
+	}
+	:global(.tool-pen.active) {
+		background-color: var(--contrast-color) !important;
+		color: red;
+	}
+
+	.tool:hover {
 		cursor: pointer;
-		border: 1px solid blue;
+		border: 1px solid var(--orange);
+		background-color: whitesmoke;
 	}
 </style>
