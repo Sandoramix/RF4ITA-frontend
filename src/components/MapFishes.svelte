@@ -52,10 +52,6 @@
 {/if}
 
 <style>
-	.search_fish {
-		height: 2rem;
-		text-align: center;
-	}
 	h2 {
 		padding: 0.25rem;
 		background-color: #1a0035;

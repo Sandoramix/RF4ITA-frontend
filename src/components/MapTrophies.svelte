@@ -1,14 +1,23 @@
 <script>
 	export let map_trophies = [];
+	var input;
+	export var map_trophies_filtered = map_trophies;
 
+	const filter_fishes = () => {
+		let name = input.value.toLowerCase() || "";
+
+		map_trophies_filtered = map_trophies.filter((f) => f.fish_name.toLowerCase().includes(name));
+	};
 	$: visible = map_trophies.length !== 0;
 </script>
 
 {#if visible}
 	<div class="container">
 		<h2>Map Trophies</h2>
+		<input type="text" class="search_fish" bind:this={input} on:input={filter_fishes} placeholder="Search for fish" />
+
 		<li id="trophies">
-			{#each map_trophies as fish}
+			{#each map_trophies_filtered as fish}
 				<li class="item">
 					<span class="fish">{fish.fish_name}</span>
 					<div class="fish-sub">

@@ -74,7 +74,7 @@
 			{#if currentMapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<MapTrophies map_trophies={currentMapTrophies} />
+						<MapTrophies map_trophies={currentMapTrophies} map_trophies_filtered={currentMapTrophies} />
 					</div>
 
 					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -140,11 +140,11 @@
 		height: 30vh;
 	}
 	.toggler {
-		height: 4rem;
-		width: 1.5rem;
+		height: 6rem;
+		width: 2.5rem;
 		background-color: black;
 		cursor: pointer;
-		padding: 0.25rem;
+		padding: 0.5rem;
 		text-align: center;
 		writing-mode: vertical-rl;
 		text-orientation: upright;

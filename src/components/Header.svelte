@@ -17,13 +17,22 @@
 		<IgClock />
 	</div>
 	<h1 id="title">
-		<a href="/#" style="text-decoration: none;color: var(--primary-color);">Russian Fishing 4 ITA</a>
+		<div>Russian Fishing 4 ITA</div>
+		<a href="https://discord.gg/luke4316" id="discord"><div>Discord</div></a>
 	</h1>
 
 	<h1 id="sidebar-toggler" class="text-center active" on:click={sidebarHandler}>Maps</h1>
 </header>
 
 <style>
+	#discord {
+		text-decoration: underline;
+		color: var(--primary-color);
+		font-size: medium;
+	}
+	#discord:hover {
+		color: var(--contrast-color);
+	}
 	header {
 		width: 100%;
 		height: var(--header-height);
