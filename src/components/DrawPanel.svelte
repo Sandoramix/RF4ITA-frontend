@@ -164,8 +164,8 @@
 	#draw-tools__container {
 		z-index: 1000;
 		position: absolute;
-		bottom: 10px;
-		left: 10px;
+		bottom: 20px;
+		left: 12px;
 	}
 
 	#draw-tools__container,
@@ -181,7 +181,7 @@
 	.tool {
 		width: 30px;
 		height: 30px;
-		border: 1px solid black;
+		border: 1px solid var(--contrast-dark-color);
 		line-height: 26px;
 		text-align: center;
 		font-weight: 600;
@@ -189,22 +189,30 @@
 
 		user-select: none;
 		padding: 0.125rem;
+		background-color: #ffffffec;
+		color: var(--accent-color);
 	}
 
 	.tool-size {
 		font-size: 15px;
 	}
-	.tool-pen {
-		color: var(--contrast-dark-color);
-	}
+
 	:global(.tool-pen.active) {
 		background-color: var(--contrast-color) !important;
-		color: red;
+		color: red !important;
+	}
+	.tool-clear {
+		color: red !important;
+		font-weight: bold;
+	}
+	.tool-clear:hover {
+		background-color: #ffbbbb !important;
 	}
 
 	.tool:hover {
 		cursor: pointer;
 		border: 1px solid var(--orange);
-		background-color: whitesmoke;
+		background-color: var(--primary-color);
+		color: var(--accent-dark-color);
 	}
 </style>

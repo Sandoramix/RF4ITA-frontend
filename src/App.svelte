@@ -30,7 +30,7 @@
 		init();
 
 		//TODO REMOVE
-		// updateCurrentMap({ detail: `belayariver` });
+		updateCurrentMap({ detail: `belayariver` });
 	});
 
 	//SYNC INITIAL LOAD
@@ -78,7 +78,7 @@
 					</div>
 
 					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
-						T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `<` : `>`}</span>
+						T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
 			{/if}
@@ -89,7 +89,7 @@
 					</div>
 
 					<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
-						F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `<` : `>`}</span>
+						F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
 			{/if}
@@ -142,7 +142,12 @@
 	.toggler {
 		height: 6rem;
 		width: 2.5rem;
-		background-color: black;
+		background-color: var(--accent-color);
+		border-right: 1px solid black;
+
+		border-top: 1px solid black;
+
+		border-bottom: 1px solid black;
 		cursor: pointer;
 		padding: 0.5rem;
 		text-align: center;
@@ -156,6 +161,9 @@
 		top: 0;
 		left: 275px;
 		transition: left 0.5s ease-in-out;
+	}
+	.toggler:hover {
+		background-color: #5300a0;
 	}
 	.left-item:first-child .left-sub-item {
 		top: -65px;

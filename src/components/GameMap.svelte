@@ -11,7 +11,6 @@
 		SEARCH_LAT,
 		MAP_CNT,
 		LEAFLET_MAP,
-		COORDS_CONTENT,
 		IMG_OUTER_SIZE = 1024,
 		IMG_MIN_INNER_PX = 40,
 		IMG_MAX_INNER_PX = 986,
@@ -26,11 +25,8 @@
 		IMG_INNER_SIZE = IMG_OUTER_SIZE - IMG_MIN_INNER_PX * 2,
 		IG_MAP_SQUARE_LENGTH = 94;
 
-	var layerObject = document.createElement(`object`),
-		leafletMap,
-		currentCoordinateCircle = L.circleMarker(),
+	var leafletMap,
 		mapTileLayer = L.tileLayer(),
-		layerGroup,
 		xRatio = 0,
 		yRatio = 0,
 		x = 0,
@@ -41,9 +37,7 @@
 			[-1, -1],
 			[-1, -1],
 		]),
-		polylineTooltip = L.tooltip();
-
-	userFirstMark = userSecondMark = userMarksLine = polylineTooltip = null;
+		userFirstMark = (userSecondMark = userMarksLine = null);
 
 	onMount(() => {
 		SEARCH_LATLNG_BTN = document.querySelector(`#coordsSearch`);
@@ -51,7 +45,7 @@
 		SEARCH_LAT = document.querySelector(`#search-y`);
 		MAP_CNT = document.querySelector(`#map-container`);
 		LEAFLET_MAP = document.querySelector(`#map`);
-		COORDS_CONTENT = document.querySelector(`#coords`);
+
 		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true));
 	});
 
@@ -130,7 +124,7 @@
 			let igX = mapToGameCoord(x, xRatio, currentMap.limits.x);
 			let igY = mapToGameCoord(y, yRatio, currentMap.limits.y);
 
-			COORDS_CONTENT.textContent = `${check ? `${igX}:${igY}` : `-:-`}`;
+			currCoordsSpan.textContent = `${check ? `${igX}:${igY}` : `-:-`}`;
 			if (!check) return;
 			if (userFirstMark && !userSecondMark) {
 				updatePolyline(ev.latlng);
@@ -194,8 +188,8 @@
 			userFirstMark.removeFrom(leafletMap);
 			userSecondMark.removeFrom(leafletMap);
 			userMarksLine.removeFrom(leafletMap);
-			polylineTooltip.removeFrom(leafletMap);
-			userFirstMark = userSecondMark = userMarksLine = polylineTooltip = null;
+			currDistanceDiv.innerHTML = ``;
+			userFirstMark = userSecondMark = userMarksLine = null;
 			return;
 		}
 
@@ -203,36 +197,30 @@
 			igy = mapToGameCoord(IMG_OUTER_SIZE - latlng.lat, yRatio, currentMap.limits.y);
 
 		if (userFirstMark) {
-			userSecondMark = newCircleMarker(latlng, 8, `${igx}:${igy}`, `#40FF40`).addTo(leafletMap);
+			userSecondMark = newCircleMarker(latlng, 5, `${igx}:${igy}`, `#40FF40`).addTo(leafletMap);
 			updatePolyline(latlng);
 
 			return;
 		}
-		userFirstMark = newCircleMarker(latlng, 10, `${igx}:${igy}`).addTo(leafletMap);
-		polylineTooltip = L.tooltip({ permanent: true, direction: "top", sticky: true });
-		polylineTooltip.setContent(`Distance: 0m`);
+		userFirstMark = newCircleMarker(latlng, 7, `${igx}:${igy}`).addTo(leafletMap);
+
+		currDistanceDiv.textContent = `Distance: 0m`;
 
 		userMarksLine = L.polyline([userFirstMark.getLatLng(), latlng], {}).addTo(leafletMap);
-		userMarksLine.bindTooltip(polylineTooltip);
-		userMarksLine.openTooltip();
 	}
 
 	function updatePolyline(latlng, offset = 0) {
 		if (!userFirstMark) return;
-		let midpoint = midpointBetweenLatlng(userFirstMark.getLatLng(), latlng);
+		// let midpoint = midpointBetweenLatlng(userFirstMark.getLatLng(), latlng);
 
 		let direction = getOrientation(latlng);
 
-		let lat = latlng.lat,
-			lng = latlng.lng;
-		lat = direction.includes("N") ? lat + offset : lat - offset;
-		lng = direction.includes("E") ? lng - offset : lng + offset;
-
-		userMarksLine.setLatLngs([userFirstMark.getLatLng(), L.latLng(lat, lng)]);
+		userMarksLine.setLatLngs([userFirstMark.getLatLng(), latlng]);
 
 		let distance = distanceBetweenPoints(userFirstMark.getLatLng(), latlng, IG_MAP_SQUARE_LENGTH / currentMap.square_distance);
-
-		polylineTooltip.setLatLng(midpoint).setContent(`Distance: <b>${distance}m</b> <em><b>${distance !== 0 ? direction : ``}</b></em>`);
+		currDistanceDiv.innerHTML = `<span id="distance-prefix">Distance: </span><span id="distance"><b>${distance}m</b> <em><b>${
+			distance !== 0 ? direction : ``
+		}</b></em>`;
 	}
 
 	function getOrientation(latlng2) {
@@ -247,9 +235,9 @@
 	function distanceBetweenPoints(point_a, point_b, divider) {
 		return Math.round(Math.sqrt(Math.pow(point_b.lat - point_a.lat, 2) + Math.pow(point_b.lng - point_a.lng, 2)) / divider);
 	}
-	function midpointBetweenLatlng(latlng1, latlng2) {
-		return L.latLng((latlng1.lat + latlng2.lat) / 2, (latlng1.lng + latlng2.lng) / 2);
-	}
+	// function midpointBetweenLatlng(latlng1, latlng2) {
+	// 	return L.latLng((latlng1.lat + latlng2.lat) / 2, (latlng1.lng + latlng2.lng) / 2);
+	// }
 
 	function searchCoordInBounds(coord, limits, element) {
 		if (coord > limits.max || coord < limits.min) {
@@ -267,25 +255,32 @@
 		}
 		leafletMap.dragging.enable();
 	};
+
+	//BINDED TO ELEMENTS
+	var currCoordsSpan, currDistanceDiv;
 </script>
 
 <div id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
 	<DrawPanel on:map_toggle={mapDragToggler} />
+	<div id="map-footer">
+		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
+			Mouse coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
+		</p>
+		<div id="distance-cnt" bind:this={currDistanceDiv} />
+	</div>
 	<div id="map-header">
-		<span id="coords" class="shadow {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">-:-</span>
 		<div id="search" class="shadow">
-			<span>Coordinate search:</span>
+			Search coords
 			<input type="number" name="x" id="search-x" class="search" maxlength="3" bind:this={SEARCH_LNG} />
 			<span>:</span>
 			<input type="number" name="y" id="search-y" class="search" maxlength="3" bind:this={SEARCH_LAT} />
 			<button id="coordsSearch">⯐</button>
 		</div>
 	</div>
+
 	<div id="map" class="crosshair-cursor" />
 	<div class="leaflet-popup-tip-container  leaflet-tooltip leaflet-tooltip" style="display: none !important;" />
 </div>
-
-<link rel="stylesheet" href="https://ita.russianfishing.repl.co/leaflet/leaflet.css" />
 
 <style>
 	#map-container * {
@@ -327,16 +322,36 @@
 		border-radius: 5px 0 0 5px;
 		user-select: none;
 	}
+	#map-footer {
+		position: absolute;
+		bottom: 1rem;
+		left: 50px;
+		z-index: 600;
+		display: flex;
+		justify-content: space-evenly;
+		background-color: #3f3f3f10;
+		border-radius: 15px;
+	}
+	:global(#distance-cnt) {
+		margin-left: 2ch;
+	}
 
-	#coords {
-		text-align: center;
-		min-width: 4ch;
-		padding: 0.25ch;
-		border-radius: 0.5rem;
-		background-color: #ffffff9c;
+	:global(#distance-cnt),
+	#coords-cnt {
+		font-weight: 600;
 		font-size: 150%;
-		box-shadow: 0 0 1px inset darkgray;
-		margin-right: 0.5rem;
+		padding: 0.25rem;
+		text-shadow: -1px 2px 1px #5e5e5eda;
+		color: var(--primary-color);
+	}
+	:global(#distance),
+	#coords {
+		color: var(--contrast-color);
+		text-shadow: -1px 2px 1px var(--contrast-dark-color);
+		font-weight: 700;
+	}
+	#coords-cnt {
+		max-width: 21ch;
 	}
 
 	.crosshair-cursor {
@@ -346,7 +361,10 @@
 	#search {
 		border-radius: 10px;
 		display: flex;
-		background-color: #ffffff9c;
+		background-color: #6200beb0;
+
+		color: var(--primary-color);
+		text-shadow: -1px 2px 1px #5e5e5eda;
 		padding: 0.5rem;
 		gap: 0.25rem;
 		z-index: 600;
@@ -398,6 +416,8 @@
 		justify-content: center;
 		align-items: center;
 	}
-
+	.leaflet-container {
+		background: var(--accent-dark-color);
+	}
 	/*----------------------------------------------*/
 </style>
