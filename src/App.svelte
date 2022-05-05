@@ -22,6 +22,15 @@
 
 	//INITIAL LOAD
 	onMount(async () => {
+		fetch(`${api}ismobile`)
+			.then((res) => res.json)
+			.then((res) => {
+				if (res.result) {
+					alert(
+						`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
+					);
+				}
+			});
 		let get = await fetch(`${api}maps/`);
 		let data = await get.json();
 
