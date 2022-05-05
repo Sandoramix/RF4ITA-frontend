@@ -23,7 +23,7 @@
 	//INITIAL LOAD
 	onMount(async () => {
 		fetch(`${api}ismobile`)
-			.then((res) => res.json)
+			.then((res) => res.json())
 			.then((res) => {
 				if (res.result) {
 					alert(
