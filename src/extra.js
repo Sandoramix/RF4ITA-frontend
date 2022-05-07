@@ -1,8 +1,5 @@
-import { writable } from "svelte/store";
-
-
-export const api = `http://localhost/api/`
-    // export const api = `https://ita.russianfishing.repl.co/api/`
+const data = require("./config.json")
+const api = data.api;
 export const leaflet_maps = `${api}/maps/z_x_y.jpg`;
 
 
