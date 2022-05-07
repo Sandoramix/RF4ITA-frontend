@@ -35,7 +35,7 @@ body {
 
 :root {
     --primary-color: white;
-    --contrast-color: #00ff37;
+    --contrast-color: #00e632;
     --contrast-dark-color: #006d18;
     --accent-color: #6200be;
     --accent-dark-color: #06000c;
@@ -48,6 +48,8 @@ body {
     --sidebar-width: 0px;
     --homepage-width: calc(100vw - var(--sidebar-width));
     --orange: #e67a00;
+    --orange-light: #ffc400;
+    --map-left-panel-width: 275px;
 }
 
 
