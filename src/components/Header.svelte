@@ -16,23 +16,34 @@
 		<h4>Game clock</h4>
 		<IgClock />
 	</div>
+
 	<h1 id="title">
-		<div>Russian Fishing 4 ITA</div>
-		<a href="https://discord.gg/luke4316" id="discord"><div>Discord</div></a>
+		<div>
+			<p id="discord">Community's</p>
+			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
+		</div>
+		<div><p id="rf4-title">Russian Fishing 4 ITA</p></div>
+		<div>
+			<p id="author">Made by</p>
+			<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
+		</div>
 	</h1>
 
 	<h1 id="sidebar-toggler" class="text-center active" on:click={sidebarHandler}>Maps</h1>
 </header>
 
 <style>
-	#discord {
-		text-decoration: underline;
-		color: var(--primary-color);
+	.link {
+		text-decoration: dotted;
+		color: var(--orange);
 		font-size: medium;
+		font-size: 13px;
+		font-weight: 700;
 	}
-	#discord:hover {
+	.link:hover {
 		color: var(--contrast-color);
 	}
+
 	header {
 		width: 100%;
 		height: var(--header-height);
@@ -44,11 +55,41 @@
 		color: white;
 		user-select: none;
 	}
+	#rf4-title {
+		font-size: 24px;
+		display: inline;
+		font-weight: bold;
+		color: var(--orange-light);
+	}
+
 	#title {
 		width: 75%;
 		max-width: 80%;
 		max-height: var(--header-height);
+		display: inline-flex;
+		text-align: center;
+
+		justify-content: center;
 	}
+
+	#title > :first-child {
+		border-left: 1px solid var(--accent-color);
+	}
+	#title > :last-child {
+		border-right: 1px solid var(--accent-color);
+		height: var(--header-height);
+	}
+
+	#title > div {
+		font-weight: 500;
+		display: flex;
+		flex-direction: column;
+		width: 33%;
+		font-size: 18px;
+		align-items: center;
+		justify-content: center;
+	}
+
 	#clock {
 		min-width: 90px;
 		max-width: 10%;
