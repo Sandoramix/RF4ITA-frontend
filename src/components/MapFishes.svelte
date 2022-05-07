@@ -66,8 +66,8 @@
 	}
 	.container {
 		background-color: var(--accent-dark-color);
-		max-width: 300px;
-		width: 275px;
+		width: var(--map-left-panel-width);
+
 		text-align: center;
 	}
 	#trophies {
@@ -130,6 +130,7 @@
 
 	.fish-sub span {
 		width: 75%;
+		user-select: text;
 	}
 	.fish-sub img {
 		width: 25%;

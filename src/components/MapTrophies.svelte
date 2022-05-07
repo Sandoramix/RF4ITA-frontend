@@ -63,7 +63,7 @@
 	}
 	.container {
 		background-color: var(--accent-dark-color);
-		max-width: 300px;
+		width: var(--map-left-panel-width);
 
 		text-align: center;
 	}
@@ -126,6 +126,7 @@
 
 	.fish-sub span {
 		width: 75%;
+		user-select: text;
 	}
 	.fish-sub img {
 		width: 25%;
