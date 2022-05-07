@@ -143,20 +143,19 @@
 
 	.left {
 		height: calc(100vh - var(--header-height));
-		min-width: 175px;
-		width: 275px;
+
 		align-self: baseline;
 		position: absolute;
 		z-index: 500;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		gap: 0.5rem;
 	}
 	.left-item:not(:first-child) {
 		margin-top: 0.5rem;
 	}
 	.left-item {
-		width: 100%;
 		display: flex;
 		position: relative;
 		height: 30vh;
@@ -177,11 +176,11 @@
 		text-orientation: upright;
 		border-top-right-radius: 5px;
 		border-bottom-right-radius: 5px;
-
+		user-select: none;
 		font-weight: bold;
 		position: absolute;
 		top: 0;
-		left: 275px;
+		left: var(--map-left-panel-width);
 		transition: left 0.5s ease-in-out;
 	}
 	.toggler:hover {

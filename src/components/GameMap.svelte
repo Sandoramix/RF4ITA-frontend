@@ -85,16 +85,8 @@
 
 		let obj = document.createElement("object");
 		obj.type = "image/svg+xml";
-		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
 
 		var allLayers = [mapTileLayer];
-
-		if (get.status != 404) {
-			obj.data = `${api}maps/${currentMap.name}/ground`;
-
-			var grOverlay = L.svgOverlay(obj, OUTER_BOUNDS);
-			allLayers.push(grOverlay);
-		}
 
 		leafletMap = L.map(`map`, {
 			crs: customCRS,
@@ -103,26 +95,38 @@
 			doubleClickZoom: false,
 		}).setView([0, 0], 1);
 
+		let ctrl = L.control.layers({}, {}).setPosition("topleft");
+		let canAddCtrl = false;
+
 		let mapSpotsMarkers = [];
 
 		mapSpots.forEach((spot) => {
 			let mapX = gameToMapCoord(spot.x, xRatio, currentMap.limits.x),
 				mapY = gameToMapCoord(spot.y, yRatio, currentMap.limits.y, true);
 
-			let spotMarker = L.circleMarker(L.latLng(mapY, mapX), {
-				radius: 4,
-				color: `#ffe600`,
-				// fillColor: `#e67a00`,
-			});
+			let spotMarker = newCircleMarker(L.latLng(mapY, mapX), 4, `${spot.x}:${spot.y}`, `#ffe600`, `#e67a00`, `top`);
 			mapSpotsMarkers.push(spotMarker);
 		});
-		let spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
-		allLayers.push(spotsLayer);
 
-		let ctrl = L.control.layers({}, { "Active spots": spotsLayer }).setPosition("topleft").addTo(leafletMap);
+		if (mapSpotsMarkers.length > 0) {
+			let spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
 
+			ctrl.addOverlay(spotsLayer, "Active spots");
+			canAddCtrl = true;
+		}
+
+		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
+		console.log(get.status);
 		if (get.status != 404) {
+			obj.data = `${api}maps/${currentMap.name}/ground`;
+
+			var grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
+
 			ctrl.addOverlay(grOverlay, "Ground");
+			canAddCtrl = true;
+		}
+		if (canAddCtrl) {
+			ctrl.addTo(leafletMap);
 		}
 
 		leafletMap.on("click", onLeafletMapClick);
@@ -151,10 +155,10 @@
 
 		createUserMarkerHandler(ev.latlng);
 	}
-	function newCircleMarker(latlng, radius = 10, tooltipContent = null, color = `#3388ff`) {
-		let marker = L.circleMarker(latlng, { radius, color });
+	function newCircleMarker(latlng, radius = 10, tooltipContent = null, color = `#3388ff`, fill = null, direction = `auto`) {
+		let marker = L.circleMarker(latlng, { radius, color, fillColor: fill });
 		if (tooltipContent) {
-			let tip = L.tooltip({ direction: "auto", interactive: false }).setContent(tooltipContent);
+			let tip = L.tooltip({ direction, interactive: false }).setContent(tooltipContent);
 			marker.bindTooltip(tip);
 		}
 
