@@ -1,5 +1,4 @@
-const data = require("./config.json")
-export const api = data.api;
+export const api = "YOUR BACKEND";
 export const leaflet_maps = `${api}/maps/z_x_y.jpg`;
 
 
