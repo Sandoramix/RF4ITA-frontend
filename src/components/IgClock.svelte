@@ -1,6 +1,6 @@
 <script>
 	const timeratio = 2.5;
-	const igMinuteOffset = 4;
+	const igMinuteOffset = 5;
 	var hour = `00`,
 		time = `00`;
 
@@ -38,5 +38,6 @@
 <style>
 	.clock {
 		display: flex;
+		color: var(--orange-light);
 	}
 </style>
