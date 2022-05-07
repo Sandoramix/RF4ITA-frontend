@@ -1,5 +1,5 @@
 const data = require("./config.json")
-const api = data.api;
+export const api = data.api;
 export const leaflet_maps = `${api}/maps/z_x_y.jpg`;
 
 
