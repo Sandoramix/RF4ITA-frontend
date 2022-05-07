@@ -15,10 +15,11 @@
 		currentMapName = "",
 		mapList,
 		currentMap,
-		currentMapTrophies,
-		currentMapFishes;
+		mapTrophies,
+		mapFishes,
+		mapSpots;
 
-	mapList = currentMapTrophies = currentMapFishes = [];
+	mapList = mapSpots = mapTrophies = mapFishes = [];
 
 	//INITIAL LOAD
 	onMount(async () => {
@@ -39,7 +40,7 @@
 		init();
 
 		//TODO REMOVE
-		updateCurrentMap({ detail: `belayariver` });
+		updateCurrentMap({ detail: `thecottagepond` });
 	});
 
 	//SYNC INITIAL LOAD
@@ -47,21 +48,33 @@
 
 	const updateCurrentMap = async (ev) => {
 		let find = mapList?.find((m) => m.name === ev.detail);
+		if (!find) return;
+
 		currentMap = find;
 		currentMapName = currentMap.formatted_name;
-		gameMap.updateMap(currentMap);
+
 		let get = await fetch(`${api}fishes/${currentMap.name}/trophies`);
 		if (get.status == 200) {
 			get = await get.json();
-			currentMapTrophies = get.results;
+			mapTrophies = get.results || [];
+		}
+
+		get = await fetch(`${api}spots/${currentMap.name}`);
+		if (get.status == 200) {
+			get = await get.json();
+
+			mapSpots = get.results || [];
+			console.log(mapSpots);
 		}
 
 		get = await fetch(`${api}fishes/${currentMap.name}`);
 		if (get.status == 200) {
 			get = await get.json();
 
-			currentMapFishes = get.results;
+			mapFishes = get.results || [];
 		}
+
+		gameMap.updateMap(currentMap);
 	};
 
 	const sidebarToggleHandler = () => {
@@ -78,12 +91,12 @@
 <Header on:sidebarToggle={sidebarToggleHandler} />
 
 <main>
-	{#if currentMapFishes.length != 0 || currentMapTrophies.length != 0}
+	{#if mapFishes.length != 0 || mapTrophies.length != 0}
 		<div class="left">
-			{#if currentMapTrophies.length != 0}
+			{#if mapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<MapTrophies map_trophies={currentMapTrophies} map_trophies_filtered={currentMapTrophies} />
+						<MapTrophies map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
 					</div>
 
 					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -91,10 +104,10 @@
 					</div>
 				</div>
 			{/if}
-			{#if currentMapFishes.length != 0}
+			{#if mapFishes.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-						<MapFishes map_fishes={currentMapFishes} map_fishes_filtered={currentMapFishes} />
+						<MapFishes map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
 					</div>
 
 					<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
@@ -106,7 +119,7 @@
 	{/if}
 	<div id="page">
 		<div id="gmap">
-			<GameMap bind:this={gameMap} />
+			<GameMap bind:this={gameMap} {mapSpots} />
 		</div>
 	</div>
 
@@ -151,7 +164,7 @@
 	.toggler {
 		height: 6rem;
 		width: 2.5rem;
-		background-color: var(--accent-color);
+		background-color: var(--header-bg);
 		border-right: 1px solid black;
 
 		border-top: 1px solid black;

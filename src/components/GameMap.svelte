@@ -1,10 +1,10 @@
 <script>
 	import DrawPanel from "./DrawPanel.svelte";
-	import L from "leaflet";
+	import * as L from "leaflet";
 	import { onMount } from "svelte";
 	import { api } from "../extra";
 
-	var currentMap;
+	export var mapSpots = [];
 
 	var SEARCH_LATLNG_BTN,
 		SEARCH_LNG,
@@ -18,15 +18,16 @@
 			[0, 0],
 			[IMG_OUTER_SIZE, IMG_OUTER_SIZE],
 		],
-		INNER_BOUNDS = [
-			[IMG_MIN_INNER_PX, IMG_MIN_INNER_PX],
-			[IMG_MAX_INNER_PX, IMG_MAX_INNER_PX],
-		],
+		// INNER_BOUNDS = [
+		// 	[IMG_MIN_INNER_PX, IMG_MIN_INNER_PX],
+		// 	[IMG_MAX_INNER_PX, IMG_MAX_INNER_PX],
+		// ],
 		IMG_INNER_SIZE = IMG_OUTER_SIZE - IMG_MIN_INNER_PX * 2,
 		IG_MAP_SQUARE_LENGTH = 94;
 
-	var leafletMap,
-		mapTileLayer = L.tileLayer(),
+	var currentMap,
+		leafletMap,
+		mapTileLayer,
 		xRatio = 0,
 		yRatio = 0,
 		x = 0,
@@ -36,8 +37,9 @@
 		userMarksLine = L.polyline([
 			[-1, -1],
 			[-1, -1],
-		]),
-		userFirstMark = (userSecondMark = userMarksLine = null);
+		]);
+
+	userFirstMark = userSecondMark = userMarksLine = null;
 
 	onMount(() => {
 		SEARCH_LATLNG_BTN = document.querySelector(`#coordsSearch`);
@@ -50,8 +52,8 @@
 	});
 
 	export async function updateMap(map) {
+		if (!map) return;
 		currentMap = map;
-		if (!map || !currentMap) return;
 
 		xRatio = IMG_INNER_SIZE / (currentMap.limits.x.max - currentMap.limits.x.min);
 		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
@@ -101,16 +103,26 @@
 			doubleClickZoom: false,
 		}).setView([0, 0], 1);
 
+		let mapSpotsMarkers = [];
+
+		mapSpots.forEach((spot) => {
+			let mapX = gameToMapCoord(spot.x, xRatio, currentMap.limits.x),
+				mapY = gameToMapCoord(spot.y, yRatio, currentMap.limits.y, true);
+
+			let spotMarker = L.circleMarker(L.latLng(mapY, mapX), {
+				radius: 4,
+				color: `#ffe600`,
+				// fillColor: `#e67a00`,
+			});
+			mapSpotsMarkers.push(spotMarker);
+		});
+		let spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
+		allLayers.push(spotsLayer);
+
+		let ctrl = L.control.layers({}, { "Active spots": spotsLayer }).setPosition("topleft").addTo(leafletMap);
+
 		if (get.status != 404) {
-			L.control
-				.layers(
-					{},
-					{
-						Ground: grOverlay,
-					},
-				)
-				.setPosition("topleft")
-				.addTo(leafletMap);
+			ctrl.addOverlay(grOverlay, "Ground");
 		}
 
 		leafletMap.on("click", onLeafletMapClick);
