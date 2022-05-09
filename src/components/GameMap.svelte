@@ -278,7 +278,7 @@
 </script>
 
 <div id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
-	<DrawPanel passive:true on:map_toggle={mapDragToggler} />
+	<DrawPanel on:map_toggle={mapDragToggler} />
 	<div id="map-footer">
 		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
 			Mouse coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>

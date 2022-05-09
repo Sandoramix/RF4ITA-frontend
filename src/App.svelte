@@ -1,4 +1,5 @@
 <script>
+	import Loading from "./components/Loading.svelte";
 	import MapTrophies from "./components/MapTrophies.svelte";
 	import { api } from "./extra";
 
@@ -22,6 +23,8 @@
 		cacheMapTrophies = new Map(),
 		cacheMapFishes = new Map();
 
+	var mapListIsLoading = true,
+		isChangingMap = false;
 	//INITIAL LOAD
 	fetch(`${api}ismobile`)
 		.then((res) => res.json())
@@ -32,13 +35,19 @@
 				);
 			}
 		});
-	fetch(`${api}maps/`)
-		.then((res) => res.json())
-		.then((data) => {
-			mapList = data.results;
-			init();
-		});
-
+	function fetchMaps() {
+		fetch(`${api}maps/`)
+			.then((res) => res.json())
+			.then((data) => {
+				mapList = data.results;
+				mapListIsLoading = false;
+				init();
+			})
+			.catch((err) => {
+				fetchMaps();
+			});
+	}
+	fetchMaps();
 	//-------------------------------------
 
 	//SYNC INITIAL LOAD
@@ -69,6 +78,7 @@
 		currentMap = newMap;
 
 		if (!currentMap) return;
+		isChangingMap = true;
 		localStorage.setItem("lastOpenedMap", name);
 		var get;
 
@@ -108,6 +118,7 @@
 		mapFishes = mapFishes_tmp;
 
 		gameMap.updateMap(currentMap, mapSpots);
+		isChangingMap = false;
 	};
 
 	const sidebarToggleHandler = () => {
@@ -122,9 +133,13 @@
 	var fishesToggler = false;
 </script>
 
-<Header passive:true on:sidebarToggle={sidebarToggleHandler} />
+<Header on:sidebarToggle={sidebarToggleHandler} />
 
 <main>
+	{#if mapListIsLoading}
+		<Loading />
+	{/if}
+
 	<div class="left">
 		{#if mapTrophies.length != 0 || mapFishes.length != 0}
 			{#if mapTrophies.length != 0}
@@ -153,23 +168,27 @@
 	</div>
 
 	<div id="page">
+		{#if isChangingMap}
+			<Loading />
+		{/if}
 		<div id="gmap">
 			<GameMap bind:this={gameMap} />
 		</div>
 	</div>
 
-	<Sidebar {currentMap} visible={sidebarActive} {mapList} passive:true on:change_map={updateCurrentMap} />
+	<Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
 </main>
 
 <style>
 	main {
 		height: calc(100% - var(--header-height));
+		position: relative;
 	}
 	#page {
 		width: calc(100% - var(--sidebar-width));
 		height: calc(100vh - var(--header-height));
 		overflow-y: auto;
-
+		position: relative;
 		display: flex;
 
 		align-items: center;
