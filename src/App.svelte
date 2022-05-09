@@ -60,8 +60,8 @@
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
-			// mapTrophiesObj?.clearInput();
-			// mapFishesObj?.clearInput();
+			mapTrophiesObj?.clearInput();
+			mapFishesObj?.clearInput();
 
 			localStorage.setItem("lastOpenedMap", null);
 			gameMap.removeMap();
