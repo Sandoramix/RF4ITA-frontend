@@ -56,7 +56,7 @@
 		mapFishesObj?.clearInput();
 		let newMap = mapList.find((map) => map.name == name);
 
-		if (currentMap?.name == newMap.name) {
+		if (currentMap && newMap && currentMap.name == newMap.name) {
 			currentMap = null;
 			mapTrophies = [];
 			mapFishes = [];
@@ -122,7 +122,7 @@
 	var fishesToggler = false;
 </script>
 
-<Header on:sidebarToggle={sidebarToggleHandler} />
+<Header passive:true on:sidebarToggle={sidebarToggleHandler} />
 
 <main>
 	<div class="left">
@@ -133,7 +133,7 @@
 						<MapTrophies bind:this={mapTrophiesObj} map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
 					</div>
 
-					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
+					<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
 						T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
@@ -144,7 +144,7 @@
 						<MapFishes bind:this={mapFishesObj} map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
 					</div>
 
-					<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
+					<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
 						F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
@@ -158,7 +158,7 @@
 		</div>
 	</div>
 
-	<Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
+	<Sidebar {currentMap} visible={sidebarActive} {mapList} passive:true on:change_map={updateCurrentMap} />
 </main>
 
 <style>

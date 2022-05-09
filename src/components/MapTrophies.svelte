@@ -17,7 +17,7 @@
 {#if visible}
 	<div class="container">
 		<h2>Map Trophies</h2>
-		<input type="text" class="search_fish" bind:this={input} on:input={filter_fishes} placeholder="Search for fish" />
+		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} placeholder="Search for fish" />
 
 		<li id="trophies">
 			{#each map_trophies_filtered as fish}

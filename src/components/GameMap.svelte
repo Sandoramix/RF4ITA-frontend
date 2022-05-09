@@ -46,7 +46,7 @@
 		MAP_CNT = document.querySelector(`#map-container`);
 		LEAFLET_MAP = document.querySelector(`#map`);
 
-		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true));
+		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true), { passive: true });
 	});
 	export function removeMap() {
 		if (leafletMap) {
@@ -278,7 +278,7 @@
 </script>
 
 <div id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
-	<DrawPanel on:map_toggle={mapDragToggler} />
+	<DrawPanel passive:true on:map_toggle={mapDragToggler} />
 	<div id="map-footer">
 		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
 			Mouse coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>

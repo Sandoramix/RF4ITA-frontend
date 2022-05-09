@@ -25,6 +25,7 @@
 		{#each mapList as map}
 			<div
 				id="map-{map.name}"
+				passive:true
 				class="maps-list-item {currentMap == map ? `active` : ``}"
 				on:click={() => {
 					onItemClicked(map);
