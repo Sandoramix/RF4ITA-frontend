@@ -52,7 +52,8 @@
 
 	const updateCurrentMap = async (ev) => {
 		let name = ev.detail;
-
+		mapTrophiesObj?.clearInput();
+		mapFishesObj?.clearInput();
 		let newMap = mapList.find((map) => map.name == name);
 
 		if (currentMap?.name == newMap.name) {
@@ -60,8 +61,6 @@
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
-			mapTrophiesObj?.clearInput();
-			mapFishesObj?.clearInput();
 
 			localStorage.setItem("lastOpenedMap", null);
 			gameMap.removeMap();
