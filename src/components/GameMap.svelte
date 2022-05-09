@@ -1,8 +1,8 @@
 <script>
-	import DrawPanel from "./DrawPanel.svelte";
+	import DrawPanel from ".\\DrawPanel.svelte";
 	import * as L from "leaflet";
 	import { onMount } from "svelte";
-	import { api } from "../extra";
+	import { api } from "..\\extra";
 
 	var SEARCH_LATLNG_BTN,
 		SEARCH_LNG,

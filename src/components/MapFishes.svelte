@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from "svelte";
 	var input;
 	export let map_fishes = [];
 	export var map_fishes_filtered = map_fishes;

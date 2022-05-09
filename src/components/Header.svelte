@@ -1,5 +1,5 @@
 <script lang="ts">
-	import IgClock from "./IGClock.svelte";
+	import IgClock from ".\\IGClock.svelte";
 
 	import { createEventDispatcher } from "svelte";
 

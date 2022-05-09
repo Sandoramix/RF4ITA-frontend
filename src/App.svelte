@@ -1,6 +1,6 @@
 <script>
 	import MapTrophies from "./components/MapTrophies.svelte";
-	import { api, getCookie, setCookie } from "./extra";
+	import { api } from "./extra";
 
 	import Header from "./components/Header.svelte";
 
