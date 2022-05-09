@@ -9,6 +9,9 @@
 		map_trophies_filtered = map_trophies.filter((f) => f.fish_name.toLowerCase().includes(name));
 	};
 	$: visible = map_trophies.length !== 0;
+	export const clearInput = () => {
+		input.value = ``;
+	};
 </script>
 
 {#if visible}
