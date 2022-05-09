@@ -11,6 +11,10 @@
 	};
 
 	$: visible = map_fishes.length !== 0;
+
+	export const clearInput = () => {
+		input.value = ``;
+	};
 </script>
 
 {#if visible}

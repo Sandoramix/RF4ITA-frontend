@@ -4,8 +4,6 @@
 	import { onMount } from "svelte";
 	import { api } from "../extra";
 
-	export var mapSpots = [];
-
 	var SEARCH_LATLNG_BTN,
 		SEARCH_LNG,
 		SEARCH_LAT,
@@ -50,20 +48,23 @@
 
 		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true));
 	});
-
-	export async function updateMap(map) {
-		if (!map) return;
-		currentMap = map;
-
-		xRatio = IMG_INNER_SIZE / (currentMap.limits.x.max - currentMap.limits.x.min);
-		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
-
-		LEAFLET_MAP.innerHTML = `<div id="map"></div>`;
+	export function removeMap() {
 		if (leafletMap) {
 			leafletMap.invalidateSize();
 			leafletMap.off();
 			leafletMap.remove();
 		}
+		LEAFLET_MAP.innerHTML = `<div id="map"></div>`;
+		leafletMap = null;
+		currentMap = null;
+		userFirstMark = userSecondMark = userMarksLine = null;
+	}
+	export async function updateMap(map, mapSpots) {
+		removeMap();
+		if (!map) return;
+		currentMap = map;
+		xRatio = IMG_INNER_SIZE / (currentMap.limits.x.max - currentMap.limits.x.min);
+		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
 
 		mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
 			minZoom: 0,
@@ -116,7 +117,7 @@
 		}
 
 		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
-		console.log(get.status);
+
 		if (get.status != 404) {
 			obj.data = `${api}maps/${currentMap.name}/ground`;
 

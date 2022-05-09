@@ -8,10 +8,16 @@
 
 	const onItemClicked = (newMap) => {
 		event(`change_map`, newMap.name);
+
+		if (currentMap?.name === newMap.name) {
+			currentMap = null;
+		} else {
+			currentMap = newMap;
+		}
 		return;
 	};
 
-	export let currentMap = null;
+	export var currentMap = null;
 </script>
 
 <aside id="sidebar" class={visible ? `` : `hidden`}>

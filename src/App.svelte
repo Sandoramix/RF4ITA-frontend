@@ -4,77 +4,111 @@
 
 	import Header from "./components/Header.svelte";
 
-	import { onMount } from "svelte";
-
 	import GameMap from "./components/GameMap.svelte";
 	import Sidebar from "./components/Sidebar.svelte";
 	import MapFishes from "./components/MapFishes.svelte";
 
-	var gameMap,
-		sidebarActive = false,
-		currentMapName = "",
-		mapList,
-		currentMap,
-		mapTrophies,
-		mapFishes,
-		mapSpots;
+	var currentMap,
+		gameMap,
+		sidebarActive = false;
 
-	mapList = mapSpots = mapTrophies = mapFishes = [];
+	var mapTrophies = [],
+		mapFishes = [],
+		mapSpots = [];
+
+	var mapList = [];
+
+	var cacheMapSpots = new Map(),
+		cacheMapTrophies = new Map(),
+		cacheMapFishes = new Map();
 
 	//INITIAL LOAD
-	onMount(async () => {
-		fetch(`${api}ismobile`)
-			.then((res) => res.json())
-			.then((res) => {
-				if (res.result) {
-					alert(
-						`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
-					);
-				}
-			});
-		let get = await fetch(`${api}maps/`);
-		let data = await get.json();
+	fetch(`${api}ismobile`)
+		.then((res) => res.json())
+		.then((res) => {
+			if (res.result) {
+				alert(
+					`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
+				);
+			}
+		});
+	fetch(`${api}maps/`)
+		.then((res) => res.json())
+		.then((data) => {
+			mapList = data.results;
+			init();
+		});
 
-		mapList = data.results;
-
-		init();
-
-		//TODO REMOVE
-		updateCurrentMap({ detail: `thecottagepond` });
-	});
+	//-------------------------------------
 
 	//SYNC INITIAL LOAD
-	const init = () => {};
+	const init = () => {
+		let map = localStorage.getItem("lastOpenedMap");
+
+		if (map != `null`) {
+			updateCurrentMap({ detail: map });
+		}
+	};
 
 	const updateCurrentMap = async (ev) => {
-		let find = mapList?.find((m) => m.name === ev.detail);
-		if (!find) return;
+		let name = ev.detail;
 
-		currentMap = find;
-		currentMapName = currentMap.formatted_name;
+		let newMap = mapList.find((map) => map.name == name);
 
-		let get = await fetch(`${api}fishes/${currentMap.name}/trophies`);
-		if (get.status == 200) {
-			get = await get.json();
-			mapTrophies = get.results || [];
+		if (currentMap?.name == newMap.name) {
+			currentMap = null;
+			mapTrophies = [];
+			mapFishes = [];
+			mapSpots = [];
+			// mapTrophiesObj?.clearInput();
+			// mapFishesObj?.clearInput();
+
+			localStorage.setItem("lastOpenedMap", null);
+			gameMap.removeMap();
+			return;
 		}
+		currentMap = newMap;
 
-		get = await fetch(`${api}spots/${currentMap.name}`);
-		if (get.status == 200) {
+		if (!currentMap) return;
+		localStorage.setItem("lastOpenedMap", name);
+		var get;
+
+		let mapTrophies_tmp = cacheMapTrophies.get(name);
+
+		if (mapTrophies_tmp == null) {
+			get = await fetch(`${api}fishes/${name}/trophies`);
+
 			get = await get.json();
+			mapTrophies_tmp = get.results || [];
 
-			mapSpots = get.results || [];
-			console.log(mapSpots);
+			cacheMapTrophies.set(name, mapTrophies_tmp);
 		}
+		mapTrophies = mapTrophies_tmp;
 
-		get = await fetch(`${api}fishes/${currentMap.name}`);
-		if (get.status == 200) {
+		let mapSpots_tmp = cacheMapSpots.get(name);
+
+		if (mapSpots_tmp == null) {
+			get = await fetch(`${api}spots/${name}`);
+
 			get = await get.json();
+			mapSpots_tmp = get.results || [];
 
-			mapFishes = get.results || [];
+			cacheMapSpots.set(name, mapSpots_tmp);
 		}
+		mapSpots = mapSpots_tmp;
 
-		gameMap.updateMap(currentMap);
+		let mapFishes_tmp = cacheMapFishes.get(name);
+		if (mapFishes_tmp == null) {
+			get = await fetch(`${api}fishes/${name}`);
+
+			get = await get.json();
+			mapFishes_tmp = get.results || [];
+
+			cacheMapFishes.set(name, mapFishes_tmp);
+		}
+		mapFishes = mapFishes_tmp;
+
+		gameMap.updateMap(currentMap, mapSpots);
 	};
 
 	const sidebarToggleHandler = () => {
@@ -82,8 +116,9 @@
 		document.documentElement.style.setProperty(`--sidebar-width`, `${sidebarActive ? `${200}px` : "0px"}`);
 	};
 
-	setTimeout(sidebarToggleHandler, 200);
+	var mapTrophiesObj, mapFishesObj;
 
+	setTimeout(sidebarToggleHandler, 200);
 	var trophiesToggler = false;
 	var fishesToggler = false;
 </script>
@@ -91,12 +126,12 @@
 <Header on:sidebarToggle={sidebarToggleHandler} />
 
 <main>
-	{#if mapFishes.length != 0 || mapTrophies.length != 0}
-		<div class="left">
+	<div class="left">
+		{#if mapTrophies.length != 0 || mapFishes.length != 0}
 			{#if mapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<MapTrophies map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
+						<MapTrophies bind:this={mapTrophiesObj} map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
 					</div>
 
 					<div class="toggler" on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -107,7 +142,7 @@
 			{#if mapFishes.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-						<MapFishes map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
+						<MapFishes bind:this={mapFishesObj} map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
 					</div>
 
 					<div class="toggler" on:click={() => (fishesToggler = !fishesToggler)}>
@@ -115,11 +150,12 @@
 					</div>
 				</div>
 			{/if}
-		</div>
-	{/if}
+		{/if}
+	</div>
+
 	<div id="page">
 		<div id="gmap">
-			<GameMap bind:this={gameMap} {mapSpots} />
+			<GameMap bind:this={gameMap} />
 		</div>
 	</div>
 
