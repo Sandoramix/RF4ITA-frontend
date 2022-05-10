@@ -1,7 +1,6 @@
 {
-    "name": "svelte-app",
-    "version": "1.0.0",
-    "private": true,
+    "name": "rf4-ita",
+    "version": "1.2.0",
     "scripts": {
         "build": "rollup -c",
         "dev": "rollup -c -w ",
@@ -19,7 +18,14 @@
     },
     "dependencies": {
         "leaflet": "^1.8.0",
-        "sirv-cli": "^2.0.0",
-        "svelte-use-form": "^2.4.3"
+        "sirv-cli": "^2.0.0"
+    },
+    "license": "GPLv3",
+    "author": {
+        "name": "Sandoramix",
+        "email": "sandoramix.dev@gmail.com"
+    },
+    "engines": {
+        "node": "v16.13.0"
     }
 }
