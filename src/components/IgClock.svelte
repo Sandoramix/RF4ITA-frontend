@@ -1,6 +1,6 @@
 <script>
 	const timeratio = 2.5;
-	const igMinuteOffset = 5;
+	const igMinuteTimer = 2.5;
 	var hour = `00`,
 		time = `00`;
 
@@ -16,17 +16,17 @@
 		let _igHour = Math.trunc(ratio / 60),
 			_igMinute = Math.trunc(ratio - _igHour * 60);
 
-		_igHour = _igMinute == 0 && _igHour - 1 >= 0 ? _igHour - 1 : _igHour;
-		_igMinute = _igMinute == 0 ? 60 - igMinuteOffset : _igMinute < igMinuteOffset ? 60 + _igMinute - igMinuteOffset : _igMinute - igMinuteOffset;
-
 		hour = formatTime(_igHour);
 		time = formatTime(_igMinute);
+
+		setTimeout(() => {
+			getIgTime();
+		}, igMinuteTimer * 1000);
 	}
 
 	const formatTime = (x) => x.toString().padStart(2, `0`);
 
 	getIgTime();
-	setInterval(getIgTime, 500);
 </script>
 
 <div class="clock">

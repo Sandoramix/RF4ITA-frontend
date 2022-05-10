@@ -16,6 +16,10 @@
 		drawNewPosX = 0,
 		drawNewPosY = 0;
 
+	export const updateSize = (size) => {
+		drawingCanvas.width = size;
+		drawingCanvas.height = size;
+	};
 	function startDrawing(ev) {
 		ev.stopPropagation();
 		isDrawing = true;
@@ -68,8 +72,7 @@
 		ctx = drawingCanvas.getContext("2d");
 		ctx.lineWidth = 1;
 
-		drawingCanvas.width = 600;
-		drawingCanvas.height = 600;
+		updateSize(600);
 	});
 
 	const onPenClick = (ev) => {
@@ -163,8 +166,6 @@
 		top: 0;
 		left: 0;
 		position: absolute;
-		width: 600px;
-		height: 600px;
 		background-color: transparent;
 	}
 

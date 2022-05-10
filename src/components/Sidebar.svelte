@@ -20,8 +20,8 @@
 	export var currentMap = null;
 </script>
 
-<aside id="sidebar" class={visible ? `` : `hidden`}>
-	<div class="maps-list">
+<aside class="right-sidebar {visible ? `` : `hidden`}">
+	<div class="maps-list-container">
 		{#each mapList as map}
 			<div
 				id="map-{map.name}"
@@ -38,15 +38,7 @@
 </aside>
 
 <style>
-	#sidebar::-webkit-scrollbar-thumb,
-	#sidebar *::-webkit-scrollbar-thumb {
-		background-color: var(--contrast-color);
-	}
-	#sidebar::-webkit-scrollbar-track,
-	#sidebar *::-webkit-scrollbar-track {
-		width: 5px;
-	}
-	#sidebar {
+	.right-sidebar {
 		position: fixed;
 		user-select: none;
 		color: white;
@@ -64,11 +56,11 @@
 		transition: transform 0.5s ease-in-out;
 	}
 
-	#sidebar.hidden {
+	.right-sidebar.hidden {
 		transform: translateX(150%);
 	}
 
-	.maps-list {
+	.maps-list-container {
 		overflow-x: hidden;
 		overflow-y: auto;
 		display: table;
@@ -108,5 +100,15 @@
 		background-color: var(--contrast-color);
 		color: var(--accent-dark-color);
 		font-weight: bold;
+	}
+
+	/* MOBILE DEVICES */
+	@media screen and (max-width: 700px) {
+		:root {
+			--sidebar-width: 0px !important;
+		}
+		.right-sidebar {
+			display: none;
+		}
 	}
 </style>

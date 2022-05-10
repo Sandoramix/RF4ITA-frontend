@@ -9,27 +9,50 @@
 	import Sidebar from "./components/Sidebar.svelte";
 	import MapFishes from "./components/MapFishes.svelte";
 
+	//COMPONENTS
+	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
+
+	//MAP OBJECTS
 	var currentMap,
-		gameMap,
+		//SIDEBAR STATE
 		sidebarActive = false;
 
+	//CURRENT MAP'S FETCHED DATA
 	var mapTrophies = [],
 		mapFishes = [],
 		mapSpots = [];
 
+	//LIST OF ALL MAPS
 	var mapList = [];
 
+	//CACHE DATA GATHERED FROM BACKEND
 	var cacheMapSpots = new Map(),
 		cacheMapTrophies = new Map(),
 		cacheMapFishes = new Map();
 
+	//STATES
 	var mapListIsLoading = true,
-		isChangingMap = false;
+		isChangingMap = false,
+		trophiesToggler = false,
+		fishesToggler = false,
+		isMobile = false;
+
+	var innerPageDiv;
+
+	var pageHeight = 800;
+	var pageWidth = 1000;
+
+	const mapSizePercentage = 0.9;
+	const mapMinSize = 320;
+
+	var mapSize = 400;
+
 	//INITIAL LOAD
 	fetch(`${api}ismobile`)
 		.then((res) => res.json())
 		.then((res) => {
 			if (res.result) {
+				isMobile = true;
 				alert(
 					`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
 				);
@@ -51,28 +74,33 @@
 	//-------------------------------------
 
 	//SYNC INITIAL LOAD
-	const init = () => {
+	function init() {
 		let map = localStorage.getItem("lastOpenedMap");
 
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
-	};
+		setTimeout(() => {
+			resize(null);
+			HeaderComponent.manualSelect(map);
+		}, 500);
+	}
 
-	const updateCurrentMap = async (ev) => {
+	async function updateCurrentMap(ev) {
 		let name = ev.detail;
-		mapTrophiesObj?.clearInput();
-		mapFishesObj?.clearInput();
+		mapTrophiesComponent?.clearInput();
+		mapFishesComponent?.clearInput();
 		let newMap = mapList.find((map) => map.name == name);
 
-		if (currentMap && newMap && currentMap.name == newMap.name) {
+		if (name === "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
 			currentMap = null;
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
 
 			localStorage.setItem("lastOpenedMap", null);
-			gameMap.removeMap();
+			GameMapComponent.removeMap();
+
 			return;
 		}
 		currentMap = newMap;
@@ -117,35 +145,44 @@
 		}
 		mapFishes = mapFishes_tmp;
 
-		gameMap.updateMap(currentMap, mapSpots);
+		GameMapComponent.updateMap(currentMap, mapSpots);
 		isChangingMap = false;
-	};
+	}
 
-	const sidebarToggleHandler = () => {
+	function sidebarToggleHandler() {
 		sidebarActive = !sidebarActive;
 		document.documentElement.style.setProperty(`--sidebar-width`, `${sidebarActive ? `${200}px` : "0px"}`);
-	};
+	}
 
-	var mapTrophiesObj, mapFishesObj;
+	sidebarToggleHandler();
 
-	setTimeout(sidebarToggleHandler, 200);
-	var trophiesToggler = false;
-	var fishesToggler = false;
+	function resize(ev) {
+		if (!innerPageDiv) return;
+		pageHeight = parseFloat(innerPageDiv.offsetHeight);
+		pageWidth = parseFloat(innerPageDiv.clientWidth);
+
+		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
+		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
+		GameMapComponent.updateSize(mapSize);
+	}
+
+	document.addEventListener(`resize`, resize, { passive: true });
 </script>
 
-<Header on:sidebarToggle={sidebarToggleHandler} />
+<svelte:window on:resize={resize} />
+
+<Header bind:this={HeaderComponent} on:sidebarToggle={sidebarToggleHandler} {mapList} on:change_map={updateCurrentMap} />
 
 <main>
 	{#if mapListIsLoading}
 		<Loading />
 	{/if}
-
 	<div class="left">
 		{#if mapTrophies.length != 0 || mapFishes.length != 0}
 			{#if mapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<MapTrophies bind:this={mapTrophiesObj} map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
+						<MapTrophies bind:this={mapTrophiesComponent} map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -156,7 +193,7 @@
 			{#if mapFishes.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-						<MapFishes bind:this={mapFishesObj} map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
+						<MapFishes bind:this={mapFishesComponent} map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
@@ -166,13 +203,12 @@
 			{/if}
 		{/if}
 	</div>
-
-	<div id="page">
+	<div id="page" bind:this={innerPageDiv}>
 		{#if isChangingMap}
 			<Loading />
 		{/if}
 		<div id="gmap">
-			<GameMap bind:this={gameMap} />
+			<GameMap bind:this={GameMapComponent} {isMobile} />
 		</div>
 	</div>
 
@@ -217,7 +253,7 @@
 	.toggler {
 		height: 6rem;
 		width: 2.5rem;
-		background-color: var(--header-bg);
+		background-color: #850000;
 		border-right: 1px solid black;
 
 		border-top: 1px solid black;
@@ -238,7 +274,7 @@
 		transition: left 0.5s ease-in-out;
 	}
 	.toggler:hover {
-		background-color: #5300a0;
+		background-color: #db0000;
 	}
 	.left-item:first-child .left-sub-item {
 		top: -65px;
@@ -261,7 +297,8 @@
 	}
 
 	#gmap {
+		margin-top: 0.5rem;
 		z-index: 100;
-		align-self: center;
+		align-self: flex-start;
 	}
 </style>

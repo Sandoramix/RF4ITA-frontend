@@ -4,12 +4,7 @@
 	import { onMount } from "svelte";
 	import { api } from "..\\extra";
 
-	var SEARCH_LATLNG_BTN,
-		SEARCH_LNG,
-		SEARCH_LAT,
-		MAP_CNT,
-		LEAFLET_MAP,
-		IMG_OUTER_SIZE = 1024,
+	var IMG_OUTER_SIZE = 1024,
 		IMG_MIN_INNER_PX = 40,
 		IMG_MAX_INNER_PX = 986,
 		OUTER_BOUNDS = [
@@ -22,6 +17,9 @@
 		// ],
 		IMG_INNER_SIZE = IMG_OUTER_SIZE - IMG_MIN_INNER_PX * 2,
 		IG_MAP_SQUARE_LENGTH = 94;
+
+	//ELEMENTS
+	var DRAW_PANEL, SEARCH_LATLNG_BTN, SEARCH_LNG, SEARCH_LAT, MAP_CNT, LEAFLET_MAP, currCoordsSpan, currDistanceDiv;
 
 	var currentMap,
 		leafletMap,
@@ -36,16 +34,13 @@
 			[-1, -1],
 			[-1, -1],
 		]);
-
+	const minZoom = 0,
+		maxZoom = 2;
 	userFirstMark = userSecondMark = userMarksLine = null;
 
-	onMount(() => {
-		SEARCH_LATLNG_BTN = document.querySelector(`#coordsSearch`);
-		SEARCH_LNG = document.querySelector(`#search-x`);
-		SEARCH_LAT = document.querySelector(`#search-y`);
-		MAP_CNT = document.querySelector(`#map-container`);
-		LEAFLET_MAP = document.querySelector(`#map`);
+	export var isMobile = false;
 
+	onMount(() => {
 		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true), { passive: true });
 	});
 	export function removeMap() {
@@ -67,8 +62,8 @@
 		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
 
 		mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
-			minZoom: 0,
-			maxZoom: 2,
+			minZoom,
+			maxZoom,
 			noWrap: true,
 			attribution: 'Map inspired by &copy; <a href="https://rf4.info">rf4.info</a>',
 		});
@@ -94,7 +89,7 @@
 			layers: allLayers,
 			maxBounds: OUTER_BOUNDS,
 			doubleClickZoom: false,
-		}).setView([0, 0], 1);
+		}).setView([0, 0], !isMobile);
 
 		let ctrl = L.control.layers({}, {}).setPosition("topleft");
 		let canAddCtrl = false;
@@ -252,9 +247,6 @@
 	function distanceBetweenPoints(point_a, point_b, divider) {
 		return Math.round(Math.sqrt(Math.pow(point_b.lat - point_a.lat, 2) + Math.pow(point_b.lng - point_a.lng, 2)) / divider);
 	}
-	// function midpointBetweenLatlng(latlng1, latlng2) {
-	// 	return L.latLng((latlng1.lat + latlng2.lat) / 2, (latlng1.lng + latlng2.lng) / 2);
-	// }
 
 	function searchCoordInBounds(coord, limits, element) {
 		if (coord > limits.max || coord < limits.min) {
@@ -266,6 +258,7 @@
 		return true;
 	}
 
+	//DISABLE DRAGGING WHEN IN DRAW MODE
 	const mapDragToggler = () => {
 		if (leafletMap.dragging.enabled()) {
 			return leafletMap.dragging.disable();
@@ -273,12 +266,16 @@
 		leafletMap.dragging.enable();
 	};
 
-	//BINDED TO ELEMENTS
-	var currCoordsSpan, currDistanceDiv;
+	//MAP SIZING
+	export function updateSize(size) {
+		MAP_CNT.style.width = `${size}px`;
+		MAP_CNT.style.height = `${size}px`;
+		DRAW_PANEL.updateSize(size);
+	}
 </script>
 
-<div id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
-	<DrawPanel on:map_toggle={mapDragToggler} />
+<div bind:this={MAP_CNT} id="map-container" style="visibility: {currentMap ? `visible` : `hidden`};">
+	<DrawPanel bind:this={DRAW_PANEL} on:map_toggle={mapDragToggler} />
 	<div id="map-footer">
 		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
 			Mouse coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
@@ -288,14 +285,14 @@
 	<div id="map-header">
 		<div id="search" class="shadow">
 			Search coords
-			<input type="number" name="x" id="search-x" class="search" maxlength="3" bind:this={SEARCH_LNG} />
+			<input type="number" name="x" class="search" maxlength="3" bind:this={SEARCH_LNG} />
 			<span>:</span>
-			<input type="number" name="y" id="search-y" class="search" maxlength="3" bind:this={SEARCH_LAT} />
-			<button id="coordsSearch">⯐</button>
+			<input type="number" name="y" class="search" maxlength="3" bind:this={SEARCH_LAT} />
+			<button id="coordsSearch" bind:this={SEARCH_LATLNG_BTN}>⯐</button>
 		</div>
 	</div>
 
-	<div id="map" class="crosshair-cursor" />
+	<div bind:this={LEAFLET_MAP} id="map" class="crosshair-cursor" />
 	<div class="leaflet-popup-tip-container  leaflet-tooltip leaflet-tooltip" style="display: none !important;" />
 </div>
 
@@ -316,8 +313,8 @@
 	}
 
 	#map {
-		width: 600px;
-		height: 600px;
+		width: 100%;
+		height: 100%;
 		user-select: none;
 		z-index: 300;
 		position: relative;
