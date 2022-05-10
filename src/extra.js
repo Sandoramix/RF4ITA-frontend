@@ -1,4 +1,4 @@
-export const api = "BAKEND";
+export const api = "BACKEND";
 export const leaflet_maps = `${api}/maps/z_x_y.jpg`;
 
 
