@@ -80,16 +80,13 @@
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
-		setTimeout(() => {
-			resize(null);
-			HeaderComponent.manualSelect(map);
-		}, 500);
 	}
 
 	async function updateCurrentMap(ev) {
 		let name = ev.detail;
 		mapTrophiesComponent?.clearInput();
 		mapFishesComponent?.clearInput();
+		HeaderComponent.manualSelect(name);
 		let newMap = mapList.find((map) => map.name == name);
 
 		if (name === "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
@@ -97,7 +94,7 @@
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
-
+			HeaderComponent.manualSelect("null");
 			localStorage.setItem("lastOpenedMap", null);
 			GameMapComponent.removeMap();
 
@@ -165,7 +162,10 @@
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
 		GameMapComponent.updateSize(mapSize);
 	}
-
+	function onMapLoaded() {
+		resize(null);
+		HeaderComponent.manualSelect(map);
+	}
 	document.addEventListener(`resize`, resize, { passive: true });
 </script>
 
@@ -208,7 +208,7 @@
 			<Loading />
 		{/if}
 		<div id="gmap">
-			<GameMap bind:this={GameMapComponent} {isMobile} />
+			<GameMap on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 		</div>
 	</div>
 

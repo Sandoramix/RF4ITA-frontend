@@ -32,12 +32,20 @@
 				}}
 			>
 				{map.formatted_name}
+				<span class="maps-list-sub-item">LvL: {map.unlocked_at}+</span>
 			</div>
 		{/each}
 	</div>
 </aside>
 
 <style>
+	.maps-list-sub-item {
+		display: block;
+		font-size: 0.75rem;
+		color: #a5cece;
+		font-weight: 500;
+	}
+
 	.right-sidebar {
 		position: fixed;
 		user-select: none;
@@ -63,18 +71,19 @@
 	.maps-list-container {
 		overflow-x: hidden;
 		overflow-y: auto;
-		display: table;
-		border-collapse: collapse;
+		display: flex;
+		flex-direction: column;
+		justify-content: start;
 
 		height: calc(100% - var(--header-height));
 		width: 100%;
-
-		transition: height 0.5s ease-in-out;
 	}
 
 	.maps-list-item {
+		font-weight: 600;
 		background-color: transparent;
-		display: table-row;
+		display: flex;
+		flex-direction: column;
 		text-align: center;
 		font-size: large;
 		border-top: solid 1px var(--accent-color);
@@ -96,6 +105,9 @@
 		cursor: pointer;
 	}
 
+	.maps-list-item.active .maps-list-sub-item {
+		color: var(--accent-color);
+	}
 	.maps-list-item.active {
 		background-color: var(--contrast-color);
 		color: var(--accent-dark-color);

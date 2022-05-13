@@ -1,9 +1,9 @@
 <script>
 	import DrawPanel from ".\\DrawPanel.svelte";
 	import * as L from "leaflet";
-	import { onMount } from "svelte";
+	import { createEventDispatcher, onMount } from "svelte";
 	import { api } from "..\\extra";
-
+	const dispatcher = createEventDispatcher();
 	var IMG_OUTER_SIZE = 1024,
 		IMG_MIN_INNER_PX = 40,
 		IMG_MAX_INNER_PX = 986,
@@ -89,7 +89,7 @@
 			layers: allLayers,
 			maxBounds: OUTER_BOUNDS,
 			doubleClickZoom: false,
-		}).setView([0, 0], !isMobile);
+		}).setView([0, 0], 1);
 
 		let ctrl = L.control.layers({}, {}).setPosition("topleft");
 		let canAddCtrl = false;
@@ -142,6 +142,8 @@
 				updatePolyline(ev.latlng);
 			}
 		});
+		dispatcher("can_resize");
+		leafletMap.invalidateSize();
 	}
 	function onLeafletMapClick(ev) {
 		y = ev.latlng.lat;
