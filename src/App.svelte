@@ -88,12 +88,17 @@
 			HeaderComponent.manualSelect(map);
 		}, timeout);
 	}
-
-	async function updateCurrentMap(ev) {
+	function updateMapFromHeader(ev) {
+		updateCurrentMap(ev, true);
+	}
+	async function updateCurrentMap(ev, flag) {
 		let name = ev.detail;
 		mapTrophiesComponent?.clearInput();
 		mapFishesComponent?.clearInput();
-		mobileUpdateSelectedMap(name, 100);
+
+		if (!flag) {
+			mobileUpdateSelectedMap(name, 100);
+		}
 		let newMap = mapList.find((map) => map.name == name);
 
 		if (name === "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
@@ -101,12 +106,12 @@
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
-			mobileUpdateSelectedMap(name, 100);
 			localStorage.setItem("lastOpenedMap", null);
 			GameMapComponent.removeMap();
 
 			return;
 		}
+
 		currentMap = newMap;
 
 		if (!currentMap) return;
@@ -165,7 +170,7 @@
 		pageHeight = parseFloat(innerPageDiv.offsetHeight);
 		pageWidth = parseFloat(innerPageDiv.clientWidth);
 		if (pageWidth <= 700) {
-			mobileUpdateSelectedMap(currentMap.name, 50);
+			mobileUpdateSelectedMap(currentMap ? currentMap.name : `null`, 100);
 		}
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
@@ -204,7 +209,7 @@
 
 <svelte:window on:resize={resize} />
 
-<Header bind:this={HeaderComponent} on:sidebarToggle={sidebarToggleHandler} {mapList} on:change_map={updateCurrentMap} />
+<Header bind:this={HeaderComponent} on:sidebarToggle={sidebarToggleHandler} {mapList} on:change_map={updateMapFromHeader} />
 
 <main>
 	{#if mapListIsLoading}
