@@ -1,9 +1,13 @@
 <script>
-	import DrawPanel from ".\\DrawPanel.svelte";
+	import DrawPanel from "./DrawPanel.svelte";
 	import * as L from "leaflet";
 	import { createEventDispatcher, onMount } from "svelte";
-	import { api } from "..\\extra";
+	import { api } from "../extra";
+
+	export var isMobile = false;
+
 	const dispatcher = createEventDispatcher();
+
 	var IMG_OUTER_SIZE = 1024,
 		IMG_MIN_INNER_PX = 40,
 		IMG_MAX_INNER_PX = 986,
@@ -37,8 +41,10 @@
 	const minZoom = 0,
 		maxZoom = 2;
 	userFirstMark = userSecondMark = userMarksLine = null;
-
-	export var isMobile = false;
+	var control = L.control.layers();
+	var grOverlay, spotsLayer;
+	var groundEnabled = false,
+		spotsEnabled = false;
 
 	onMount(() => {
 		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true), { passive: true });
@@ -91,7 +97,7 @@
 			doubleClickZoom: false,
 		}).setView([0, 0], !isMobile);
 
-		let ctrl = L.control.layers({}, {}).setPosition("topleft");
+		control = L.control.layers({}, {}).setPosition("topleft");
 		let canAddCtrl = false;
 
 		let mapSpotsMarkers = [];
@@ -105,9 +111,9 @@
 		});
 
 		if (mapSpotsMarkers.length > 0) {
-			let spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
-
-			ctrl.addOverlay(spotsLayer, "Active spots");
+			spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
+			spotsEnabled = true;
+			control.addOverlay(spotsLayer, "Active spots");
 			canAddCtrl = true;
 		}
 
@@ -116,13 +122,13 @@
 		if (get.status != 404) {
 			obj.data = `${api}maps/${currentMap.name}/ground`;
 
-			var grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
-
-			ctrl.addOverlay(grOverlay, "Ground");
+			grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
+			groundEnabled = true;
+			control.addOverlay(grOverlay, "Ground");
 			canAddCtrl = true;
 		}
 		if (canAddCtrl) {
-			ctrl.addTo(leafletMap);
+			control.addTo(leafletMap);
 		}
 
 		leafletMap.on("click", onLeafletMapClick);
@@ -268,6 +274,32 @@
 		leafletMap.dragging.enable();
 	};
 
+	async function possibleCoordsFromClipboard(ev) {
+		ev.stopPropagation();
+		ev.preventDefault();
+		var text = await navigator.clipboard.readText();
+		text = text.trim().replace(/\s\s+/g, ` `);
+		let result = new RegExp(/^(\d*)[:|\-.\s](\d*)$/im).exec(text);
+
+		if (!result || result.length < 3) return;
+
+		SEARCH_LNG.value = result[1];
+		SEARCH_LAT.value = result[2];
+	}
+
+	export function groundToggle() {
+		if (!grOverlay) return;
+		groundEnabled = !groundEnabled;
+		if (!groundEnabled) return grOverlay.removeFrom(leafletMap);
+		grOverlay.addTo(leafletMap);
+	}
+	export function activeSpotsToggle() {
+		if (!spotsLayer) return;
+		spotsEnabled = !spotsEnabled;
+		if (!spotsEnabled) return spotsLayer.removeFrom(leafletMap);
+		spotsLayer.addTo(leafletMap);
+	}
+
 	//MAP SIZING
 	export function updateSize(size) {
 		MAP_CNT.style.width = `${size}px`;
@@ -280,16 +312,16 @@
 	<DrawPanel bind:this={DRAW_PANEL} on:map_toggle={mapDragToggler} />
 	<div id="map-footer">
 		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
-			Mouse coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
+			Coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
 		</p>
-		<div id="distance-cnt" bind:this={currDistanceDiv} />
+		<div id="distance-cnt" class={userFirstMark != null ? `used` : ``} bind:this={currDistanceDiv} />
 	</div>
 	<div id="map-header">
 		<div id="search" class="shadow">
 			Search coords
-			<input type="number" name="x" class="search" maxlength="3" bind:this={SEARCH_LNG} />
+			<input type="number" id="search-x" name="x" class="search" maxlength="3" on:paste={possibleCoordsFromClipboard} bind:this={SEARCH_LNG} />
 			<span>:</span>
-			<input type="number" name="y" class="search" maxlength="3" bind:this={SEARCH_LAT} />
+			<input type="number" id="search-y" name="y" class="search" maxlength="3" on:paste={possibleCoordsFromClipboard} bind:this={SEARCH_LAT} />
 			<button id="coordsSearch" bind:this={SEARCH_LATLNG_BTN}>⯐</button>
 		</div>
 	</div>
@@ -340,7 +372,7 @@
 	}
 	#map-footer {
 		position: absolute;
-		bottom: 1rem;
+		bottom: 1.1rem;
 		left: 50px;
 		z-index: 600;
 		display: flex;
@@ -354,12 +386,19 @@
 
 	:global(#distance-cnt),
 	#coords-cnt {
-		font-weight: 600;
-		font-size: 150%;
-		padding: 0.25rem;
-		text-shadow: -1px 2px 1px #5e5e5eda;
-		color: var(--primary-color);
+		font-weight: 700;
+		font-size: 1.5rem;
+		padding: 0 0.25rem;
+		text-shadow: -1px 2px 1px #0f0f0fda;
+		color: rgb(255, 255, 255);
 	}
+
+	:global(#distance-cnt.used),
+	#coords-cnt {
+		background-color: rgba(51, 51, 51, 0.3);
+		border-radius: 5px;
+	}
+
 	:global(#distance),
 	#coords {
 		color: var(--contrast-color);

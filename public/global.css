@@ -50,6 +50,8 @@ body {
     --homepage-width: calc(100vw - var(--sidebar-width));
     --orange: #e67a00;
     --orange-light: #ffc400;
+    --red-color: #db0000;
+    --red-dark-color: #850000;
     --map-left-panel-width: 275px;
 }
 

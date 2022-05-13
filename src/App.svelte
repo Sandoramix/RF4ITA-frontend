@@ -1,13 +1,14 @@
 <script>
 	import Loading from "./components/Loading.svelte";
-	import MapTrophies from "./components/MapTrophies.svelte";
+
 	import { api } from "./extra";
 
 	import Header from "./components/Header.svelte";
 
 	import GameMap from "./components/GameMap.svelte";
 	import Sidebar from "./components/Sidebar.svelte";
-	import MapFishes from "./components/MapFishes.svelte";
+
+	import SidebarMapFishes from "./components/SidebarMapFishes.svelte";
 
 	//COMPONENTS
 	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
@@ -80,7 +81,6 @@
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
-		// mobileUpdateSelectedMap(map,100)
 	}
 
 	function mobileUpdateSelectedMap(map, timeout) {
@@ -174,6 +174,30 @@
 		HeaderComponent.manualSelect(map);
 	}
 	document.addEventListener(`resize`, resize, { passive: true });
+	document.addEventListener(
+		`keydown`,
+		(ev) => {
+			switch (ev.key.toLocaleLowerCase()) {
+				case "m":
+					sidebarToggleHandler();
+					break;
+				case "t":
+					trophiesToggler = !trophiesToggler;
+					break;
+				case "f":
+					fishesToggler = !fishesToggler;
+					break;
+
+				case "g":
+					GameMapComponent.groundToggle();
+					break;
+				case "a":
+					GameMapComponent.activeSpotsToggle();
+					break;
+			}
+		},
+		{ passive: true },
+	);
 </script>
 
 <svelte:window on:resize={resize} />
@@ -189,7 +213,7 @@
 			{#if mapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<MapTrophies bind:this={mapTrophiesComponent} map_trophies={mapTrophies} map_trophies_filtered={mapTrophies} />
+						<SidebarMapFishes title="Map Trophies" bind:this={mapTrophiesComponent} fishes={mapTrophies} fishes_filtered={mapTrophies} />
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -200,7 +224,7 @@
 			{#if mapFishes.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-						<MapFishes bind:this={mapFishesComponent} map_fishes={mapFishes} map_fishes_filtered={mapFishes} />
+						<SidebarMapFishes title="All map fishes" bind:this={mapFishesComponent} fishes={mapFishes} fishes_filtered={mapFishes} />
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
@@ -260,7 +284,7 @@
 	.toggler {
 		height: 6rem;
 		width: 2.5rem;
-		background-color: #850000;
+		background-color: var(--red-dark-color);
 		border-right: 1px solid black;
 
 		border-top: 1px solid black;
@@ -281,7 +305,7 @@
 		transition: left 0.5s ease-in-out;
 	}
 	.toggler:hover {
-		background-color: #db0000;
+		background-color: var(--red-color);
 	}
 	.left-item:first-child .left-sub-item {
 		top: -65px;
