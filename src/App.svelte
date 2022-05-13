@@ -164,7 +164,9 @@
 		if (!innerPageDiv) return;
 		pageHeight = parseFloat(innerPageDiv.offsetHeight);
 		pageWidth = parseFloat(innerPageDiv.clientWidth);
-
+		if (pageWidth <= 700) {
+			mobileUpdateSelectedMap(currentMap.name, 100);
+		}
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
 		GameMapComponent.updateSize(mapSize);
