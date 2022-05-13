@@ -89,7 +89,7 @@
 			layers: allLayers,
 			maxBounds: OUTER_BOUNDS,
 			doubleClickZoom: false,
-		}).setView([0, 0], 1);
+		}).setView([0, 0], !isMobile);
 
 		let ctrl = L.control.layers({}, {}).setPosition("topleft");
 		let canAddCtrl = false;

@@ -80,13 +80,20 @@
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
+		// mobileUpdateSelectedMap(map,100)
+	}
+
+	function mobileUpdateSelectedMap(map, timeout) {
+		setTimeout(() => {
+			HeaderComponent.manualSelect(map);
+		}, timeout);
 	}
 
 	async function updateCurrentMap(ev) {
 		let name = ev.detail;
 		mapTrophiesComponent?.clearInput();
 		mapFishesComponent?.clearInput();
-		HeaderComponent.manualSelect(name);
+		mobileUpdateSelectedMap(name, 100);
 		let newMap = mapList.find((map) => map.name == name);
 
 		if (name === "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
@@ -94,7 +101,7 @@
 			mapTrophies = [];
 			mapFishes = [];
 			mapSpots = [];
-			HeaderComponent.manualSelect("null");
+			mobileUpdateSelectedMap(name, 100);
 			localStorage.setItem("lastOpenedMap", null);
 			GameMapComponent.removeMap();
 

@@ -53,7 +53,7 @@
 			<option value="null" selected>Choose The Map</option>
 			{#each mapList as map}
 				<option value={map.name}>
-					{map.formatted_name}
+					{map.formatted_name} [ {map.unlocked_at}+ ]
 				</option>
 			{/each}
 		</select>
