@@ -165,7 +165,7 @@
 		pageHeight = parseFloat(innerPageDiv.offsetHeight);
 		pageWidth = parseFloat(innerPageDiv.clientWidth);
 		if (pageWidth <= 700) {
-			mobileUpdateSelectedMap(currentMap.name, 100);
+			mobileUpdateSelectedMap(currentMap.name, 50);
 		}
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
