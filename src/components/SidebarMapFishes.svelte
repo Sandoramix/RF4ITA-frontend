@@ -1,29 +1,28 @@
 <script>
+	export let fishes = [];
 	var input;
-	export let map_fishes = [];
-	export var map_fishes_filtered = map_fishes;
+	export var fishes_filtered = fishes;
 
 	const filter_fishes = () => {
 		let name = input.value.toLowerCase() || "";
 
-		map_fishes_filtered = map_fishes.filter((f) => f.fish_name.toLowerCase().includes(name));
+		fishes_filtered = fishes.filter((f) => f.fish_name.toLowerCase().includes(name));
 	};
-
-	$: visible = map_fishes.length !== 0;
-
+	$: visible = fishes.length !== 0;
 	export const clearInput = () => {
 		input.value = ``;
 	};
+
+	export let title = "";
 </script>
 
 {#if visible}
 	<div class="container">
-		<h2>All map fishes</h2>
-
+		<h2>{title}</h2>
 		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} placeholder="Search for fish" />
 
-		<li id="trophies">
-			{#each map_fishes_filtered as fish}
+		<li id="fishes">
+			{#each fishes_filtered as fish}
 				<li class="item">
 					<span class="fish">{fish.fish_name}</span>
 					<div class="fish-sub">
@@ -55,6 +54,10 @@
 {/if}
 
 <style>
+	.search_fish {
+		width: 99%;
+		margin: 0.125rem;
+	}
 	h2 {
 		padding: 0.25rem;
 		background-color: #1a0035;
@@ -70,20 +73,19 @@
 	.container {
 		background-color: var(--accent-dark-color);
 		width: var(--map-left-panel-width);
-
+		border-bottom-right-radius: 10px;
 		text-align: center;
+		border-top: 2px solid var(--red-dark-color);
+		border-bottom: 2px solid var(--red-dark-color);
+		border-right: 2px solid var(--red-dark-color);
 	}
-	#trophies {
-		margin: 0;
-		padding: 0;
+	#fishes {
 		width: 100%;
 		user-select: none;
 		list-style: none;
 
 		display: flex;
 		flex-direction: column;
-
-		align-items: center;
 		text-align: center;
 		justify-content: start;
 		font-size: 19px;
@@ -97,7 +99,7 @@
 		border-top: 1px solid var(--primary-color);
 		display: flex;
 
-		justify-content: space-between;
+		justify-content: start;
 	}
 	.item:nth-child(odd) {
 		background-color: #000;
