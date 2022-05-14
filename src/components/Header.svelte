@@ -35,22 +35,22 @@
 		<IgClock />
 	</div>
 
-	<h1 class="center">
-		<div class="spam">
-			<p id="discord">Community's</p>
+	<h1 class="header-center-cnt">
+		<div class="center-item spam">
+			<p>Community's</p>
 			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
 		</div>
-		<div class="rf4-title">
-			<a href="https://rf4game.com/" class="link rf4-title" target="_blank">Russian Fishing 4 </a>
+		<div class="center-item">
+			<a href="https://rf4game.com/" class="rf4-title link" target="_blank">Russian Fishing 4</a>
 			<span>ITA</span>
 		</div>
-		<div id="author-cnt">
+		<div class="center-item center-item-row">
 			<div class="spam">
-				<p id="author">Made by</p>
+				<p>Made by</p>
 				<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
 			</div>
-			<a id="donate-cnt" href="https://streamlabs.com/sandoramix/tip" target="_blank" rel="noopener noreferrer"
-				><img id="donate-img" src="./images/donate.png" alt="donate" />
+			<a class="donate-cnt" href="https://streamlabs.com/sandoramix/tip" target="_blank"
+				><img class="donate-img" src="./images/donate.png" alt="donate" />
 			</a>
 		</div>
 	</h1>
@@ -69,18 +69,12 @@
 </header>
 
 <style>
-	#author-cnt {
-		display: flex;
-		flex-direction: row;
-	}
-
-	#donate-img {
+	.donate-img {
 		height: 100%;
-
+		width: auto;
 		object-fit: scale-down;
 	}
-
-	#donate-cnt {
+	.donate-cnt {
 		height: var(--header-height);
 		display: flex;
 		flex-direction: column;
@@ -122,11 +116,11 @@
 		font-weight: bold;
 		color: var(--orange-light);
 	}
-	.rf4-title .link {
+	.center-item .rf4-title.link {
 		font-size: 1.5rem;
 	}
 
-	.center {
+	.header-center-cnt {
 		width: 75%;
 		max-width: 80%;
 		max-height: var(--header-height);
@@ -136,21 +130,25 @@
 		justify-content: center;
 	}
 
-	.center > :first-child {
+	.header-center-cnt > :first-child {
 		border-left: 1px solid var(--accent-color);
 	}
-	.center > :last-child {
+	.header-center-cnt > :last-child {
 		border-right: 1px solid var(--accent-color);
 		height: var(--header-height);
 	}
 
-	.center > div {
+	.center-item {
 		font-weight: 500;
 		display: flex;
 		flex-direction: column;
 		width: 33%;
 		align-items: center;
 		justify-content: center;
+	}
+	.center-item-row {
+		flex-direction: row;
+		white-space: normal;
 	}
 
 	.clock {
@@ -232,10 +230,10 @@
 		.rf4-title {
 			font-size: 1.1rem;
 		}
-		.rf4-title .link {
+		.center-item .rf4-title.link {
 			font-size: 1.1rem;
 		}
-		.center {
+		.header-center-cnt {
 			font-size: 0.9rem;
 		}
 		.link {
@@ -243,8 +241,15 @@
 		}
 	}
 	@media screen and (max-width: 550px) {
+		.header-center-cnt {
+			justify-content: end;
+		}
 		.spam {
 			display: none !important;
+		}
+		.donate-cnt {
+			margin-left: 1.5rem;
+			height: calc(var(--header-height) * 0.75);
 		}
 	}
 </style>
