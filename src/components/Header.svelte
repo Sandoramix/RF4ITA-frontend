@@ -1,5 +1,5 @@
 <script lang="ts">
-	import IgClock from ".\\IGClock.svelte";
+	import IgClock from "./IGClock.svelte";
 
 	import { createEventDispatcher, onMount } from "svelte";
 
@@ -40,10 +40,18 @@
 			<p id="discord">Community's</p>
 			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
 		</div>
-		<div class="rf4-title"><a href="https://rf4game.com/" class="link rf4-title" target="_blank">Russian Fishing 4 </a>ITA</div>
-		<div class="spam">
-			<p id="author">Made by</p>
-			<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
+		<div class="rf4-title">
+			<a href="https://rf4game.com/" class="link rf4-title" target="_blank">Russian Fishing 4 </a>
+			<span>ITA</span>
+		</div>
+		<div id="author-cnt">
+			<div class="spam">
+				<p id="author">Made by</p>
+				<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
+			</div>
+			<a id="donate-cnt" href="https://streamlabs.com/sandoramix/tip" target="_blank" rel="noopener noreferrer"
+				><img id="donate-img" src="./images/donate.png" alt="donate" />
+			</a>
 		</div>
 	</h1>
 
@@ -61,6 +69,24 @@
 </header>
 
 <style>
+	#author-cnt {
+		display: flex;
+		flex-direction: row;
+	}
+
+	#donate-img {
+		height: 100%;
+
+		object-fit: scale-down;
+	}
+
+	#donate-cnt {
+		height: var(--header-height);
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
+
 	header {
 		width: 100%;
 		height: var(--header-height);
@@ -91,7 +117,8 @@
 	/* HEADER INFOS */
 	.rf4-title {
 		font-size: 1.5rem;
-		display: inline;
+		display: flex;
+		flex-direction: column;
 		font-weight: bold;
 		color: var(--orange-light);
 	}
