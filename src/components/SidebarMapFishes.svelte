@@ -22,7 +22,7 @@
 		<h2>{title}</h2>
 		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} {placeholder} />
 
-		<li id="fishes">
+		<ul id="fishes">
 			{#each fishes_filtered as fish}
 				<li class="item">
 					<span class="fish">{fish.default_name}</span>
@@ -50,7 +50,7 @@
 					</div>
 				</li>
 			{/each}
-		</li>
+		</ul>
 	</div>
 {/if}
 

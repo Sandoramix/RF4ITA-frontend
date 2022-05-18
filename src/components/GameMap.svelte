@@ -56,7 +56,7 @@
 			leafletMap.off();
 			leafletMap.remove();
 		}
-		LEAFLET_MAP.innerHTML = `<div id="map"></div>`;
+		LEAFLET_MAP.innerHTML = ``;
 		leafletMap = null;
 		currentMap = null;
 		userFirstMark = userSecondMark = userMarksLine = null;

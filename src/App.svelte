@@ -316,7 +316,7 @@
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
-						T<span style="color:{trophiesToggler ? `red` : `green`}">{trophiesToggler ? `🡰` : `🡲`}</span>
+						T<span style="color:whitesmoke;">{trophiesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
 			{/if}
@@ -333,7 +333,7 @@
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
-						F<span style="color:{fishesToggler ? `red` : `green`}">{fishesToggler ? `🡰` : `🡲`}</span>
+						F<span style="color:whitesmoke;">{fishesToggler ? `🡰` : `🡲`}</span>
 					</div>
 				</div>
 			{/if}
