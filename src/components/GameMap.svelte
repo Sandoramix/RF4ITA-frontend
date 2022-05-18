@@ -39,7 +39,7 @@
 			[-1, -1],
 		]);
 	const minZoom = 0,
-		maxZoom = 2;
+		maxZoom = 3;
 	userFirstMark = userSecondMark = userMarksLine = null;
 	var control = L.control.layers();
 	var grOverlay, spotsLayer;
