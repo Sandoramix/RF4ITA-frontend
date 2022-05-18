@@ -45,7 +45,7 @@
 
 	const mapSizePercentage = 0.9;
 	const mapMinSize = 320;
-
+	const mapMaxSize = 750;
 	var mapSize = 400;
 
 	//INITIAL LOAD
@@ -174,6 +174,8 @@
 		}
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
+		mapSize = mapSize > mapMaxSize ? mapMaxSize : mapSize;
+		console.log(mapSize);
 		GameMapComponent.updateSize(mapSize);
 	}
 	function onMapLoaded() {
