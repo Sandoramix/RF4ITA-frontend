@@ -1,6 +1,4 @@
-export const api = "BACKEND";
-export const leaflet_maps = `${api}/maps/z_x_y.jpg`;
-
+export const api = "BAKEND";
 
 export function setCookie(cname, cvalue, exdays) {
     const d = new Date();
