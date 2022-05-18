@@ -14,17 +14,18 @@
 	};
 
 	export let title = "";
+	export let placeholder = "";
 </script>
 
 {#if visible}
 	<div class="container">
 		<h2>{title}</h2>
-		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} placeholder="Search for fish" />
+		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} {placeholder} />
 
 		<li id="fishes">
 			{#each fishes_filtered as fish}
 				<li class="item">
-					<span class="fish">{fish.fish_name}</span>
+					<span class="fish">{fish.default_name}</span>
 					<div class="fish-sub">
 						<div>
 							<img src="images/trophy.png" alt="Trophy" />

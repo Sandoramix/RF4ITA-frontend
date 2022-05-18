@@ -10,6 +10,36 @@
 
 	import SidebarMapFishes from "./components/SidebarMapFishes.svelte";
 
+	const langTexts = {
+		ITA: {
+			map_trophies: `Trofei della mappa`,
+			map_fishes: `Pesci della mappa`,
+			maps: `Mappe`,
+			coords: `Coordinate`,
+			search_coords: `Cerca coordinate`,
+			distance: `Distanza`,
+			active_spots: `Spot attivi`,
+			ground: `Tipo di fondale`,
+			search_fish: `Cerca il pesce`,
+			choose_map: `Scegli la mappa`,
+			ig_clock: `Ora IG`,
+		},
+		ENG: {
+			map_trophies: `Map Trophies`,
+			map_fishes: `All map fishes`,
+			maps: `Maps`,
+			coords: `Coords`,
+			search_coords: `Search coords`,
+			distance: `Distance`,
+			active_spots: `Active spots`,
+			ground: `Ground`,
+			search_fish: `Search for fish`,
+			choose_map: `Choose the map`,
+			ig_clock: `IG Clock`,
+		},
+	};
+	var currentLang = langTexts.ITA;
+
 	//COMPONENTS
 	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
 
@@ -64,6 +94,7 @@
 			.then((res) => res.json())
 			.then((data) => {
 				mapList = data.results;
+
 				mapListIsLoading = false;
 				init();
 			})
@@ -77,10 +108,57 @@
 	//SYNC INITIAL LOAD
 	function init() {
 		let map = localStorage.getItem("lastOpenedMap");
-
+		let lang = localStorage.getItem("langUsed");
+		HeaderComponent.manualSetLanguage(lang);
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
+	}
+
+	function handleLanguageUpdate(ev) {
+		let lang = ev.detail;
+
+		const engCase = () => {
+			mapList = mapList.map((m) => {
+				m.default_name = m.formatted_name;
+				return m;
+			});
+			mapFishes = mapFishes.map((f) => {
+				f.default_name = f.fish_name;
+				return f;
+			});
+			mapTrophies = mapTrophies.map((f) => {
+				f.default_name = f.fish_name;
+				return f;
+			});
+
+			currentLang = langTexts.ENG;
+		};
+
+		switch (lang) {
+			case "ITA":
+				mapList = mapList.map((m) => {
+					m.default_name = m.formatted_name_it;
+					return m;
+				});
+				mapFishes = mapFishes.map((f) => {
+					f.default_name = f.fish_name_it;
+					return f;
+				});
+				mapTrophies = mapTrophies.map((f) => {
+					f.default_name = f.fish_name_it;
+					return f;
+				});
+				currentLang = langTexts.ITA;
+				break;
+			case "ENG":
+				engCase();
+				break;
+			default:
+				engCase();
+				break;
+		}
+		localStorage.setItem("langUsed", lang);
 	}
 
 	function mobileUpdateSelectedMap(map, timeout) {
@@ -108,7 +186,6 @@
 			mapSpots = [];
 			localStorage.setItem("lastOpenedMap", null);
 			GameMapComponent.removeMap();
-
 			return;
 		}
 
@@ -153,7 +230,7 @@
 			cacheMapFishes.set(name, mapFishes_tmp);
 		}
 		mapFishes = mapFishes_tmp;
-
+		handleLanguageUpdate({ detail: localStorage.getItem("langUsed") });
 		GameMapComponent.updateMap(currentMap, mapSpots);
 		isChangingMap = false;
 	}
@@ -175,7 +252,7 @@
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
 		mapSize = mapSize > mapMaxSize ? mapMaxSize : mapSize;
-		console.log(mapSize);
+
 		GameMapComponent.updateSize(mapSize);
 	}
 	function onMapLoaded() {
@@ -211,7 +288,14 @@
 
 <svelte:window on:resize={resize} />
 
-<Header bind:this={HeaderComponent} on:sidebarToggle={sidebarToggleHandler} {mapList} on:change_map={updateMapFromHeader} />
+<Header
+	currentLangTexts={currentLang}
+	on:change_language={handleLanguageUpdate}
+	bind:this={HeaderComponent}
+	on:sidebarToggle={sidebarToggleHandler}
+	{mapList}
+	on:change_map={updateMapFromHeader}
+/>
 
 <main>
 	{#if mapListIsLoading}
@@ -222,7 +306,13 @@
 			{#if mapTrophies.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-						<SidebarMapFishes title="Map Trophies" bind:this={mapTrophiesComponent} fishes={mapTrophies} fishes_filtered={mapTrophies} />
+						<SidebarMapFishes
+							placeholder={currentLang.search_fish}
+							title={currentLang.map_trophies}
+							bind:this={mapTrophiesComponent}
+							fishes={mapTrophies}
+							fishes_filtered={mapTrophies}
+						/>
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
@@ -233,7 +323,13 @@
 			{#if mapFishes.length != 0}
 				<div class="left-item">
 					<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-						<SidebarMapFishes title="All map fishes" bind:this={mapFishesComponent} fishes={mapFishes} fishes_filtered={mapFishes} />
+						<SidebarMapFishes
+							placeholder={currentLang.search_fish}
+							title={currentLang.map_fishes}
+							bind:this={mapFishesComponent}
+							fishes={mapFishes}
+							fishes_filtered={mapFishes}
+						/>
 					</div>
 
 					<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
@@ -248,7 +344,7 @@
 			<Loading />
 		{/if}
 		<div id="gmap">
-			<GameMap on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
+			<GameMap {currentLang} on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 		</div>
 	</div>
 

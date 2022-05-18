@@ -31,7 +31,7 @@
 					onItemClicked(map);
 				}}
 			>
-				{map.formatted_name}
+				{map.default_name}
 				<span class="maps-list-sub-item">LvL: {map.unlocked_at}+</span>
 			</div>
 		{/each}

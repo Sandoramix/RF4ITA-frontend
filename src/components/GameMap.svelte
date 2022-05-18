@@ -5,6 +5,7 @@
 	import { api } from "../extra";
 
 	export var isMobile = false;
+	export var currentLang;
 
 	const dispatcher = createEventDispatcher();
 
@@ -113,7 +114,7 @@
 		if (mapSpotsMarkers.length > 0) {
 			spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
 			spotsEnabled = true;
-			control.addOverlay(spotsLayer, "Active spots");
+			control.addOverlay(spotsLayer, currentLang.active_spots);
 			canAddCtrl = true;
 		}
 
@@ -124,7 +125,7 @@
 
 			grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
 			groundEnabled = true;
-			control.addOverlay(grOverlay, "Ground");
+			control.addOverlay(grOverlay, currentLang.ground);
 			canAddCtrl = true;
 		}
 		if (canAddCtrl) {
@@ -224,7 +225,7 @@
 		}
 		userFirstMark = newCircleMarker(latlng, 7, `${igx}:${igy}`).addTo(leafletMap);
 
-		currDistanceDiv.textContent = `Distance: 0m`;
+		currDistanceDiv.textContent = `${currentLang.distance}: 0m`;
 
 		userMarksLine = L.polyline([userFirstMark.getLatLng(), latlng], {}).addTo(leafletMap);
 	}
@@ -238,7 +239,7 @@
 		userMarksLine.setLatLngs([userFirstMark.getLatLng(), latlng]);
 
 		let distance = distanceBetweenPoints(userFirstMark.getLatLng(), latlng, IG_MAP_SQUARE_LENGTH / currentMap.square_distance);
-		currDistanceDiv.innerHTML = `<span id="distance-prefix">Distance: </span><span id="distance"><b>${distance}m</b> <em><b>${
+		currDistanceDiv.innerHTML = `<span id="distance-prefix">${currentLang.distance}: </span><span id="distance"><b>${distance}m</b> <em><b>${
 			distance !== 0 ? direction : ``
 		}</b></em>`;
 	}
@@ -312,13 +313,13 @@
 	<DrawPanel bind:this={DRAW_PANEL} on:map_toggle={mapDragToggler} />
 	<div id="map-footer">
 		<p id="coords-cnt" class=" {leafletMap && leafletMap.dragging.enabled() ? `` : `no-select`}">
-			Coords: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
+			{currentLang.coords}: <span id="coords" bind:this={currCoordsSpan}>-:-</span>
 		</p>
 		<div id="distance-cnt" class={userFirstMark != null ? `used` : ``} bind:this={currDistanceDiv} />
 	</div>
 	<div id="map-header">
 		<div id="search" class="shadow">
-			Search coords
+			{currentLang.search_coords}
 			<input type="number" id="search-x" name="x" class="search" maxlength="3" on:paste={possibleCoordsFromClipboard} bind:this={SEARCH_LNG} />
 			<span>:</span>
 			<input type="number" id="search-y" name="y" class="search" maxlength="3" on:paste={possibleCoordsFromClipboard} bind:this={SEARCH_LAT} />

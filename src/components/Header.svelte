@@ -26,12 +26,51 @@
 		}
 	}
 
+	const languages = {
+		it: {
+			link: `./images/italian_flag.png`,
+			value: "ITA",
+		},
+		en: {
+			link: `./images/us_flag.png`,
+			value: "ENG",
+		},
+	};
+
+	var italianEnabled = false;
+	var currentLang = languages.en;
+
+	function onLanguageClick() {
+		italianEnabled = !italianEnabled;
+		if (italianEnabled) {
+			manualSetLanguage("ITA");
+		} else manualSetLanguage("ENG");
+		event("change_language", currentLang.value);
+	}
+	export function manualSetLanguage(lang = "ENG") {
+		console.log(lang);
+		switch (lang) {
+			case "ENG":
+				currentLang = languages.en;
+				italianEnabled = false;
+				break;
+			case "ITA":
+				currentLang = languages.it;
+				italianEnabled = true;
+				break;
+			default:
+				currentLang = languages.en;
+				italianEnabled = false;
+				break;
+		}
+	}
+	export let currentLangTexts;
 	export let mapList = [];
 </script>
 
 <header>
 	<div class="clock">
-		<h4>IG Clock</h4>
+		<h4>{currentLangTexts.ig_clock}</h4>
 		<IgClock />
 	</div>
 
@@ -42,7 +81,9 @@
 		</div>
 		<div class="center-item">
 			<a href="https://rf4game.com/" class="rf4-title link" target="_blank">Russian Fishing 4</a>
-			<span>ITA</span>
+			<span class="lang" on:click={onLanguageClick}
+				><img style="object-fit:contain;width:20px" src={currentLang.link} alt={currentLang.value} />{currentLang.value}</span
+			>
 		</div>
 		<div class="center-item center-item-row">
 			<div class="spam">
@@ -55,10 +96,10 @@
 		</div>
 	</h1>
 
-	<h1 class="maps-toggler text-center active" on:click={sidebarHandler}>Maps</h1>
+	<h1 class="maps-toggler text-center active" on:click={sidebarHandler}>{currentLangTexts ? currentLangTexts.maps : "Maps"}</h1>
 	<div class="maps-select-container">
 		<select bind:this={SELECT_MAP} name="select" class="maps-select" on:change={onItemClicked}>
-			<option value="null" selected>Choose The Map</option>
+			<option value="null" selected>{currentLangTexts ? currentLangTexts.choose_map : "Choose The Map"}</option>
 			{#each mapList as map}
 				<option value={map.name}>
 					{map.formatted_name} [ {map.unlocked_at}+ ]
@@ -69,6 +110,12 @@
 </header>
 
 <style>
+	.lang {
+		cursor: pointer;
+	}
+	.lang:hover {
+		color: var(--contrast-color);
+	}
 	.donate-img {
 		height: 100%;
 		width: auto;
