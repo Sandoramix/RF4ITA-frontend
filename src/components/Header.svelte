@@ -48,7 +48,6 @@
 		event("change_language", currentLang.value);
 	}
 	export function manualSetLanguage(lang = "ENG") {
-		console.log(lang);
 		switch (lang) {
 			case "ENG":
 				currentLang = languages.en;
