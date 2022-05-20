@@ -74,7 +74,7 @@
 	</div>
 
 	<h1 class="header-center-cnt">
-		<div class="center-item spam">
+		<div class="center-item spam discord">
 			<p>Community's</p>
 			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
 		</div>
@@ -85,7 +85,7 @@
 			>
 		</div>
 		<div class="center-item center-item-row">
-			<div class="spam">
+			<div class="spam author">
 				<p>Made by</p>
 				<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
 			</div>
@@ -213,7 +213,7 @@
 		width: 10%;
 		height: var(--header-height);
 		line-height: var(--header-height);
-		min-width: fit-content;
+		min-width: 170px;
 		justify-self: end;
 		align-self: center;
 	}
@@ -296,6 +296,19 @@
 		.donate-cnt {
 			margin-left: 1.5rem;
 			height: calc(var(--header-height) * 0.75);
+		}
+	}
+	@media screen and (max-width: 670px) {
+		.spam.author {
+			display: none !important;
+		}
+	}
+	@media screen and (max-width: 610px) {
+		.spam.discord {
+			display: none !important;
+		}
+		.header-center-cnt {
+			border-left: 1px solid var(--accent-color);
 		}
 	}
 </style>

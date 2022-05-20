@@ -235,7 +235,7 @@
 		if (pageWidth <= 700) {
 			mobileUpdateSelectedMap(currentMap ? currentMap.name : `null`, 100);
 		}
-		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * mapSizePercentage : pageWidth * mapSizePercentage);
+		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * (mapSizePercentage - 0.07) : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
 		mapSize = mapSize > mapMaxSize ? mapMaxSize : mapSize;
 
@@ -331,11 +331,26 @@
 	<div id="gmap">
 		<GameMap {currentLang} on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 	</div>
+	<footer class="homepage-footer">
+		<ul><li><a href="#/policy" rel="noopener noreferrer">Policy</a></li></ul>
+	</footer>
 </div>
 
 <Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
 
 <style>
+	.homepage-footer {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 0.5rem;
+	}
+	.homepage-footer ul {
+		list-style: none;
+	}
+	.homepage-footer a {
+		color: var(--primary-color);
+	}
+
 	#page {
 		width: calc(100% - var(--sidebar-width));
 		height: calc(100vh - var(--header-height));
