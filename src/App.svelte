@@ -1,8 +1,8 @@
 <script>
-	import Policy from "./routes/Policy.svelte";
 	import Home from "./routes/Home.svelte";
 	import { api } from "./extra";
 	import Router from "svelte-spa-router";
+	import Privacy from "./routes/Privacy.svelte";
 
 	//INITIAL LOAD
 	fetch(`${api}ismobile`)
@@ -16,7 +16,7 @@
 			}
 		});
 	const routes = {
-		"/policy": Policy,
+		"/privacy-policy": Privacy,
 		"*": Home,
 	};
 </script>
@@ -24,8 +24,4 @@
 <Router {routes} />
 
 <style>
-	/* main {
-		height: calc(100% - var(--header-height));
-		position: relative;
-	} */
 </style>

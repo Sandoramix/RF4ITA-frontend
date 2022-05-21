@@ -332,7 +332,7 @@
 		<GameMap {currentLang} on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 	</div>
 	<footer class="homepage-footer">
-		<ul><li><a href="#/policy" rel="noopener noreferrer">Policy</a></li></ul>
+		<ul><li><a href="#/privacy-policy" rel="noopener noreferrer">Policy</a></li></ul>
 	</footer>
 </div>
 
