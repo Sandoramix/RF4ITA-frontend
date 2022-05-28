@@ -1,6 +1,6 @@
 <script>
 	import DrawPanel from "./DrawPanel.svelte";
-	import * as L from "leaflet";
+	import L from "leaflet";
 	import { createEventDispatcher, onMount } from "svelte";
 	import { api } from "../extra";
 
@@ -46,6 +46,8 @@
 	var grOverlay, spotsLayer;
 	var groundEnabled = false,
 		spotsEnabled = false;
+
+	var leafletMapTimeout;
 
 	onMount(() => {
 		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true), { passive: true });
@@ -134,6 +136,7 @@
 
 		leafletMap.on("click", onLeafletMapClick);
 
+		leafletMap.on("contextmenu", (ev) => onLeafletMapClick(ev, true));
 		leafletMap.on("mousemove", (ev) => {
 			y = IMG_OUTER_SIZE - ev.latlng.lat;
 			x = ev.latlng.lng;
@@ -152,10 +155,22 @@
 		dispatcher("can_resize");
 		leafletMap.invalidateSize();
 	}
-	function onLeafletMapClick(ev) {
+	function onLeafletMapClick(ev, rightClicked = false) {
 		y = ev.latlng.lat;
 		x = ev.latlng.lng;
 
+		if (rightClicked) {
+			if (userSecondMark) {
+				userSecondMark.removeFrom(leafletMap);
+				userSecondMark = null;
+			} else if (userFirstMark) {
+				userFirstMark.removeFrom(leafletMap);
+				userFirstMark = null;
+				userMarksLine.removeFrom(leafletMap);
+				userFirstMark = null;
+			}
+			return;
+		}
 		if (!isCoordsInBounds(x, y)) return;
 
 		createUserMarkerHandler(ev.latlng);

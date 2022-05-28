@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Donate from "./Donate.svelte";
 	import IgClock from "./IGClock.svelte";
 
 	import { createEventDispatcher, onMount } from "svelte";
@@ -84,14 +85,14 @@
 				><img style="object-fit:contain;width:20px" src={currentLang.link} alt={currentLang.value} />{currentLang.value}</span
 			>
 		</div>
-		<div class="center-item center-item-row">
+		<div class="center-item center-item-row" style="margin-left: .5rem">
 			<div class="spam author">
 				<p>Made by</p>
 				<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
 			</div>
-			<a class="donate-cnt" href="https://streamlabs.com/sandoramix/tip" target="_blank"
-				><img class="donate-img" src="./images/donate.png" alt="donate" />
-			</a>
+			<div class="donate-cnt">
+				<Donate />
+			</div>
 		</div>
 	</h1>
 
@@ -115,11 +116,7 @@
 	.lang:hover {
 		color: var(--contrast-color);
 	}
-	.donate-img {
-		height: 100%;
-		width: auto;
-		object-fit: scale-down;
-	}
+
 	.donate-cnt {
 		height: var(--header-height);
 		display: flex;
@@ -139,7 +136,7 @@
 		user-select: none;
 		white-space: pre;
 		overflow-x: auto;
-		overflow-y: hidden;
+		overflow-y: visible;
 	}
 
 	/* LINKS */

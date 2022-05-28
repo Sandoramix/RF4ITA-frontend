@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher, onMount } from "svelte";
 
 	const dispatch = createEventDispatcher();
@@ -132,31 +132,24 @@
 
 <div id="draw-tools__container">
 	<div id="draw-tools" style="display: none;">
-		<div bind:this={draw_tools.color} class="tool tool-color " passive:true style="background-color: black;" on:click={onColorClick} />
-		<div bind:this={draw_tools.clear} class="tool tool-clear" passive:true on:click={onClearClick}>X</div>
-		<div
-			bind:this={draw_tools.size}
-			class="tool tool-size"
-			passive:true
-			on:click={(ev) => onSizeClick(ev, 1)}
-			on:contextmenu={(ev) => onSizeClick(ev, 2)}
-		>
+		<div bind:this={draw_tools.color} class="tool tool-color " style="background-color: black;" on:click={onColorClick} />
+		<div bind:this={draw_tools.clear} class="tool tool-clear" on:click={onClearClick}>X</div>
+		<div bind:this={draw_tools.size} class="tool tool-size" on:click={(ev) => onSizeClick(ev, 1)} on:contextmenu={(ev) => onSizeClick(ev, 2)}>
 			1px
 		</div>
 	</div>
-	<div bind:this={draw_tools.pen} class="tool tool-pen" passive:true on:click={onPenClick}>✎</div>
+	<div bind:this={draw_tools.pen} class="tool tool-pen" on:click={onPenClick}>✎</div>
 </div>
 <canvas
 	bind:this={drawingCanvas}
 	id="draw-canvas"
 	style="display: none;"
-	passive:true
 	on:mousedown={startDrawing}
 	on:mousemove={drawLine}
 	on:mouseup={drawToggle}
 	on:drag={drawToggle}
-	on:touchstart={startDrawing}
-	on:touchmove={drawLine}
+	on:touchstart|nonpassive={startDrawing}
+	on:touchmove|nonpassive={drawLine}
 	on:click={(ev) => ev.stopPropagation()}
 />
 

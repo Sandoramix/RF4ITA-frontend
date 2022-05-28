@@ -2,7 +2,6 @@
 	import Home from "./routes/Home.svelte";
 	import { api } from "./extra";
 	import Router from "svelte-spa-router";
-	import Privacy from "./routes/Privacy.svelte";
 
 	//INITIAL LOAD
 	fetch(`${api}ismobile`)
@@ -16,7 +15,6 @@
 			}
 		});
 	const routes = {
-		"/privacy-policy": Privacy,
 		"*": Home,
 	};
 </script>

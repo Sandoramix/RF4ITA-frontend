@@ -37,6 +37,7 @@
 	};
 	var currentLang = langTexts.ITA;
 
+	export let params = {};
 	//COMPONENTS
 	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
 
@@ -67,8 +68,8 @@
 
 	var innerPageDiv;
 
-	var pageHeight = 800;
-	var pageWidth = 1000;
+	var pageHeight = 700;
+	var pageWidth = 800;
 
 	const mapSizePercentage = 0.9;
 	const mapMinSize = 350;
@@ -331,9 +332,7 @@
 	<div id="gmap">
 		<GameMap {currentLang} on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 	</div>
-	<footer class="homepage-footer">
-		<ul><li><a href="#/privacy-policy" rel="noopener noreferrer">Policy</a></li></ul>
-	</footer>
+	<footer class="homepage-footer" />
 </div>
 
 <Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
@@ -341,14 +340,13 @@
 <style>
 	.homepage-footer {
 		position: absolute;
-		bottom: 0.5rem;
-		left: 0.5rem;
-	}
-	.homepage-footer ul {
-		list-style: none;
-	}
-	.homepage-footer a {
-		color: var(--primary-color);
+		bottom: 0;
+		left: 0;
+		display: flex;
+		width: calc(100vw - var(--sidebar-width) - 0.5rem);
+		height: 100px;
+		display: flex;
+		justify-content: center;
 	}
 
 	#page {
