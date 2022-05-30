@@ -1,4 +1,7 @@
-export const api = "BAKEND";
+export const api = "https://ita.russianfishing.repl.co/api/";
+
+
+//UNUSED
 
 export function setCookie(cname, cvalue, exdays) {
     const d = new Date();

@@ -32,7 +32,7 @@
 	<div class="donate-popup" />
 </div> -->
 <style>
-	.donate-popup-cnt {
+	/* .donate-popup-cnt {
 		position: absolute;
 		height: 5rem;
 		width: 10rem;
@@ -52,7 +52,7 @@
 		top: -15px;
 		left: 50%;
 		transform: translateX(-50%);
-	}
+	} */
 	:global(.donate-popup-cnt.hidden) {
 		visibility: hidden;
 		height: 0;
