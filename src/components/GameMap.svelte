@@ -55,7 +55,6 @@
 	export function removeMap() {
 		if (leafletMap) {
 			leafletMap.invalidateSize();
-			leafletMap.off();
 			leafletMap.remove();
 		}
 		LEAFLET_MAP.innerHTML = ``;

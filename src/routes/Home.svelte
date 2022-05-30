@@ -37,7 +37,7 @@
 	};
 	var currentLang = langTexts.ITA;
 
-	export let params = {};
+	export const params = {};
 	//COMPONENTS
 	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
 
@@ -75,6 +75,18 @@
 	const mapMinSize = 350;
 	const mapMaxSize = 700;
 	var mapSize = 400;
+
+	//INITIAL LOAD
+	fetch(`${api}ismobile`)
+		.then((res) => res.json())
+		.then((res) => {
+			if (res.result) {
+				isMobile = true;
+				alert(
+					`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
+				);
+			}
+		});
 
 	function fetchMaps() {
 		fetch(`${api}maps/`)

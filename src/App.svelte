@@ -1,19 +1,7 @@
 <script>
 	import Home from "./routes/Home.svelte";
-	import { api } from "./extra";
 	import Router from "svelte-spa-router";
 
-	//INITIAL LOAD
-	fetch(`${api}ismobile`)
-		.then((res) => res.json())
-		.then((res) => {
-			if (res.result) {
-				isMobile = true;
-				alert(
-					`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
-				);
-			}
-		});
 	const routes = {
 		"*": Home,
 	};
