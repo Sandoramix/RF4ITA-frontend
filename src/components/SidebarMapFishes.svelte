@@ -80,6 +80,7 @@
 		border-bottom: 2px solid var(--red-dark-color);
 		border-right: 2px solid var(--red-dark-color);
 	}
+
 	#fishes {
 		width: 100%;
 		user-select: none;
@@ -90,13 +91,13 @@
 		text-align: center;
 		justify-content: start;
 		font-size: 19px;
-		height: 100%;
+		height: inherit;
 		max-height: 30vh;
 
 		overflow-y: auto;
 	}
 	.item {
-		width: 100%;
+		width: inherit;
 		border-top: 1px solid var(--primary-color);
 		display: flex;
 

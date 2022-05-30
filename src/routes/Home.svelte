@@ -344,7 +344,6 @@
 	<div id="gmap">
 		<GameMap {currentLang} on:can_resize={onMapLoaded} bind:this={GameMapComponent} {isMobile} />
 	</div>
-	<footer class="homepage-footer" />
 </div>
 
 <Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
@@ -363,11 +362,14 @@
 
 	#page {
 		width: calc(100% - var(--sidebar-width));
+
 		height: calc(100vh - var(--header-height));
-		overflow-y: auto;
+		overflow: auto;
+
 		position: relative;
 		display: flex;
 
+		transition: width 0.4s ease-in-out;
 		align-items: center;
 		justify-content: center;
 	}
@@ -375,22 +377,27 @@
 	.left {
 		height: calc(100vh - var(--header-height));
 
-		align-self: baseline;
-		position: absolute;
+		position: fixed;
+		left: 0;
+		top: var(--header-height);
 		z-index: 500;
-		display: flex;
+		/* display: flex;
 		flex-direction: column;
-		justify-content: center;
-		gap: 0.5rem;
+		justify-content: center; */
+		/* gap: 0.1rem; */
 	}
-	.left-item:not(:first-child) {
-		margin-top: 0.5rem;
-	}
+	/* .left-item:not(:first-child) {
+		/* margin-top: 0.5rem; 
+	} */
 	.left-item {
 		display: flex;
 		position: relative;
-		height: 30vh;
+		height: 50%;
 	}
+	.left-item > * {
+		width: 275px;
+	}
+
 	.toggler {
 		height: 6rem;
 		width: 2.5rem;
@@ -417,12 +424,6 @@
 	.toggler:hover {
 		background-color: var(--red-color);
 	}
-	.left-item:first-child .left-sub-item {
-		top: -65px;
-	}
-	.left-item:first-child .toggler {
-		top: -65px;
-	}
 
 	.left-sub-item {
 		position: absolute;
@@ -440,6 +441,6 @@
 	#gmap {
 		margin-top: 0.5rem;
 		z-index: 100;
-		align-self: flex-start;
+		align-self: center;
 	}
 </style>

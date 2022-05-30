@@ -80,7 +80,7 @@
 			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
 		</div>
 		<div class="center-item">
-			<a href="https://rf4game.com/" class="rf4-title link" target="_blank">Russian Fishing 4</a>
+			<a href="https://rf4game.com/" class="rf4-title link" target="_blank"><h1 class="rf4-title">Russian Fishing 4</h1></a>
 			<span class="lang" on:click={onLanguageClick}
 				><img style="object-fit:contain;width:20px" src={currentLang.link} alt={currentLang.value} />{currentLang.value}</span
 			>
@@ -88,7 +88,7 @@
 		<div class="center-item center-item-row" style="margin-left: .5rem">
 			<div class="spam author">
 				<p>Made by</p>
-				<a class="link" target="_blank" href="https://www.instagram.com/sandoramixer/">@Sandoramix</a>
+				<a class="link" target="_blank" href="https://linktr.ee/sandoramix">@Sandoramix</a>
 			</div>
 			<div class="donate-cnt">
 				<Donate />
@@ -136,7 +136,7 @@
 		user-select: none;
 		white-space: pre;
 		overflow-x: auto;
-		overflow-y: visible;
+		overflow-y: hidden;
 	}
 
 	/* LINKS */
@@ -258,7 +258,7 @@
 	/* ----------------------------- */
 
 	/* MOBILE DEVICES */
-	@media screen and (max-width: 700px) {
+	@media screen and (max-width: 730px) {
 		.maps-toggler {
 			display: none;
 		}
