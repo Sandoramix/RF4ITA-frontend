@@ -1,4 +1,4 @@
-export const api = "https://ita.russianfishing.repl.co/api/";
+export const api = "BAKEND_API";
 
 
 //UNUSED
