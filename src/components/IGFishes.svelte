@@ -1,44 +1,63 @@
 <script>
 	import { createEventDispatcher } from "svelte";
 
-	export let fishes = [];
-
 	var event = createEventDispatcher();
+
+	export var allFishes = [];
+	export var mapFishes = [];
+	export var mapTrophies = [];
+
+	$: visible = currentlyShowingFishes.length !== 0;
 	var input;
-	export var fishes_filtered = fishes;
 
-	const filter_fishes = () => {
-		let name = input.value.toLowerCase() || "";
+	$: currentlyShowingFishes = mapTrophiesToggler ? mapTrophies : mapFishesToggler ? mapFishes : allFishes;
 
-		fishes_filtered = fishes.filter((f) => f.fish_name.toLowerCase().includes(name));
-	};
-	$: visible = fishes.length !== 0;
-	export const clearInput = () => {
-		input.value = ``;
-	};
+	$: currentlyFilteredShowingFishes = currentlyShowingFishes.filter((fish) =>
+		fish.fish_name.toLowerCase().includes(input ? input.toLowerCase() : ``),
+	);
+
+	var mapTrophiesToggler = false;
+	var mapFishesToggler = true;
+
+	// //EVENTS
 
 	function onFocusToggle(flag) {
 		event("focus_toggle", flag);
 	}
-	export let title = "";
-	export let placeholder = "";
 </script>
 
 {#if visible}
 	<div class="container">
-		<h2>{title}</h2>
-		<input
-			on:focus={() => onFocusToggle(true)}
-			on:blur={() => onFocusToggle(false)}
-			type="text"
-			class="search_fish"
-			bind:this={input}
-			on:input={filter_fishes}
-			{placeholder}
-		/>
+		<div class="header">
+			<h3>Fishes</h3>
+			<input on:focus={() => onFocusToggle(true)} on:blur={() => onFocusToggle(false)} type="text" class="search_fish" bind:value={input} />
 
+			<div class="filters">
+				<label class="filter {mapTrophies.length == 0 ? `disabled` : ``}" value="trophy" for="trophy_toggler"
+					><hr class="line" />
+					<input
+						type="checkbox"
+						disabled={mapTrophies.length == 0}
+						bind:checked={mapTrophiesToggler}
+						id="trophy_toggler"
+						name="filter"
+					/>Map trophies</label
+				>
+
+				<label class="filter {mapTrophiesToggler ? `disabled` : ``}" value="fish" for="fish_toggler"
+					><hr class="line" />
+					<input
+						type="checkbox"
+						disabled={mapTrophiesToggler || mapFishes.length == 0}
+						bind:checked={mapFishesToggler}
+						id="fish_toggler"
+						name="filter"
+					/>Map fish</label
+				>
+			</div>
+		</div>
 		<ul id="fishes">
-			{#each fishes_filtered as fish}
+			{#each currentlyFilteredShowingFishes as fish}
 				<li class="item">
 					<span class="fish">{fish.default_name}</span>
 					<div class="fish-sub">
@@ -70,13 +89,54 @@
 {/if}
 
 <style>
+	.header {
+		border-bottom: solid 1px var(--purple-outline-color);
+		padding: 0.25rem;
+	}
+	.filters {
+		display: flex;
+		background-color: #0e001d;
+		justify-content: space-around;
+	}
+	.filter {
+		position: relative;
+		font-size: small;
+
+		padding: 0.125rem;
+		border-radius: 5px;
+	}
+	.filter input,
+	.filter:hover {
+		cursor: pointer;
+		color: var(--contrast-color);
+	}
+	.filter .line {
+		border-color: red;
+		display: none;
+		position: absolute;
+		width: 100%;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+	.filter.disabled .filter input,
+	.filter.disabled {
+		color: gray;
+	}
+	.filter.disabled:hover {
+		cursor: not-allowed !important;
+		color: gainsboro;
+	}
+	.filter.disabled .line {
+		display: block;
+	}
+
 	.search_fish {
 		width: 99%;
 		margin: 0.125rem;
 	}
-	h2 {
+	h3 {
 		padding: 0.25rem;
-		background-color: #1a0035;
 	}
 	.container::-webkit-scrollbar-thumb,
 	.container *::-webkit-scrollbar-thumb {
@@ -91,9 +151,9 @@
 		width: var(--map-left-panel-width);
 		border-bottom-right-radius: 10px;
 		text-align: center;
-		border-top: 2px solid var(--red-dark-color);
-		border-bottom: 2px solid var(--red-dark-color);
-		border-right: 2px solid var(--red-dark-color);
+		border-top: 1px solid var(--outline-color);
+		border-bottom: 1px solid var(--outline-color);
+		border-right: 1px solid var(--outline-color);
 	}
 
 	#fishes {
