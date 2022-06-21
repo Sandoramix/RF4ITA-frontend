@@ -1,7 +1,5 @@
 # Russian fishing 4 - frontend
-## This is frontend for a remake of official site of [RF4](https://rf4.info.com/en)
-### [Backend part](https://github.com/Sandoramix/RF4ITA-backend)
-
+## This is fanmade frontend made for Russian Fishing 4 game [RF4](https://rf4.info.com/en)
 ---
 # Published [website](https://rf4.it)
 

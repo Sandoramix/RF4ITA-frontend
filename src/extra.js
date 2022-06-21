@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 export const api = "BACKEND";
 
+=======
+export const api = "BAKEND_API";
+>>>>>>> cae0d7ad6070aaa393300072b6659d03d39f37ca
 
 
 
