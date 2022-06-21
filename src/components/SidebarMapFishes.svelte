@@ -1,5 +1,9 @@
 <script>
+	import { createEventDispatcher } from "svelte";
+
 	export let fishes = [];
+
+	var event = createEventDispatcher();
 	var input;
 	export var fishes_filtered = fishes;
 
@@ -13,6 +17,9 @@
 		input.value = ``;
 	};
 
+	function onFocusToggle(flag) {
+		event("focus_toggle", flag);
+	}
 	export let title = "";
 	export let placeholder = "";
 </script>
@@ -20,7 +27,15 @@
 {#if visible}
 	<div class="container">
 		<h2>{title}</h2>
-		<input type="text" class="search_fish" passive:true bind:this={input} on:input={filter_fishes} {placeholder} />
+		<input
+			on:focus={() => onFocusToggle(true)}
+			on:blur={() => onFocusToggle(false)}
+			type="text"
+			class="search_fish"
+			bind:this={input}
+			on:input={filter_fishes}
+			{placeholder}
+		/>
 
 		<ul id="fishes">
 			{#each fishes_filtered as fish}
