@@ -1,14 +1,18 @@
 <script>
+	import { onMount } from "svelte";
+
 	import GameMap from "../components/GameMap.svelte";
 	import Header from "../components/Header.svelte";
+	import IgFishes from "../components/IGFishes.svelte";
 	import Loading from "../components/Loading.svelte";
 
 	import Sidebar from "../components/Sidebar.svelte";
-	import SidebarMapFishes from "../components/SidebarMapFishes.svelte";
 	import { api } from "../extra";
 
-	const langTexts = {
+	const lang_texts = {
 		ITA: {
+			value: `ITA`,
+			flag_link: `./images/italian_flag.png`,
 			map_trophies: `Trofei della mappa`,
 			map_fishes: `Pesci della mappa`,
 			maps: `Mappe`,
@@ -22,6 +26,8 @@
 			ig_clock: `Ora IG`,
 		},
 		ENG: {
+			value: `ENG`,
+			flag_link: `./images/us_flag.png`,
 			map_trophies: `Map Trophies`,
 			map_fishes: `All map fishes`,
 			maps: `Maps`,
@@ -35,7 +41,7 @@
 			ig_clock: `IG Clock`,
 		},
 	};
-	var currentLang = langTexts.ITA;
+	var currentLang = lang_texts.ENG;
 
 	export const params = {};
 	//COMPONENTS
@@ -57,13 +63,13 @@
 	//CACHE DATA GATHERED FROM BACKEND
 	var cacheMapSpots = new Map(),
 		cacheMapTrophies = new Map(),
-		cacheMapFishes = new Map();
+		cacheMapFishes = new Map(),
+		cacheAllFishes = [];
 
 	//STATES
 	var mapListIsLoading = true,
 		isChangingMap = false,
-		trophiesToggler = false,
-		fishesToggler = false,
+		fishesToggler = true,
 		isMobile = false;
 
 	var innerPageDiv;
@@ -76,109 +82,110 @@
 	const mapMaxSize = 700;
 	var mapSize = 400;
 
-	//INITIAL LOAD
-	fetch(`${api}ismobile`)
-		.then((res) => res.json())
-		.then((res) => {
-			if (res.result) {
-				isMobile = true;
-				alert(
-					`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
-				);
-			}
-		});
+	onMount(async () => {
+		let lang = localStorage.getItem("langUsed");
+		updateLanguageTexts({ detail: lang });
 
-	function fetchMaps() {
+		let request = await fetch(`${api}fishes/lastchange`);
+		request = await request.json();
+		let last_change = request.date;
+
+		const fetch_fishes = () => {
+			fetch(`${api}fishes/`)
+				.then((res) => res.json())
+				.then((data) => {
+					cacheAllFishes = data;
+
+					localStorage.setItem(
+						`all_fishes`,
+						JSON.stringify({
+							date: last_change,
+							fishes: data,
+						}),
+					);
+				});
+		};
+
+		let temp = JSON.parse(localStorage.getItem(`all_fishes`));
+
+		if (!temp) {
+			fetch_fishes();
+		} else {
+			if (new Date() > new Date(last_change)) {
+				fetch_fishes();
+			} else {
+				cacheAllFishes = temp.fishes;
+			}
+		}
+
+		fetch(`${api}ismobile`)
+			.then((res) => res.json())
+			.then((res) => {
+				if (res.result) {
+					isMobile = true;
+					alert(
+						`This site is meant to be used on computer browsers.\nTo have an better experience we recommend you to not use it from mobile phones`,
+					);
+				}
+			});
+
 		fetch(`${api}maps/`)
 			.then((res) => res.json())
 			.then((data) => {
-				mapList = data.results;
-
+				mapList = data;
+				sidebarToggleHandler();
 				mapListIsLoading = false;
 				init();
-			})
-			.catch((err) => {
-				fetchMaps();
 			});
-	}
-	fetchMaps();
+	});
+
 	//-------------------------------------
 
-	//SYNC INITIAL LOAD
 	function init() {
 		let map = localStorage.getItem("lastOpenedMap");
-		let lang = localStorage.getItem("langUsed");
-		HeaderComponent.manualSetLanguage(lang);
 		if (map != `null`) {
 			updateCurrentMap({ detail: map });
 		}
 	}
 
-	function handleLanguageUpdate(ev) {
+	function updateLanguageTexts(ev) {
 		let lang = ev.detail;
 
-		const engCase = () => {
-			mapList = mapList.map((m) => {
-				m.default_name = m.formatted_name;
-				return m;
-			});
-			mapFishes = mapFishes.map((f) => {
-				f.default_name = f.fish_name;
-				return f;
-			});
-			mapTrophies = mapTrophies.map((f) => {
-				f.default_name = f.fish_name;
-				return f;
-			});
+		let append_text = lang == `ITA` ? `_it` : ``;
 
-			currentLang = langTexts.ENG;
-		};
+		mapList = mapList.map((m) => {
+			m.default_name = m[`formatted_name${append_text}`];
+			return m;
+		});
+		mapFishes = mapFishes.map((f) => {
+			f.default_name = f[`fish_name${append_text}`];
+			return f;
+		});
+		mapTrophies = mapTrophies.map((f) => {
+			f.default_name = f[`fish_name${append_text}`];
+			return f;
+		});
 
-		switch (lang) {
-			case "ITA":
-				mapList = mapList.map((m) => {
-					m.default_name = m.formatted_name_it;
-					return m;
-				});
-				mapFishes = mapFishes.map((f) => {
-					f.default_name = f.fish_name_it;
-					return f;
-				});
-				mapTrophies = mapTrophies.map((f) => {
-					f.default_name = f.fish_name_it;
-					return f;
-				});
-				currentLang = langTexts.ITA;
-				break;
-			case "ENG":
-				engCase();
-				break;
-			default:
-				engCase();
-				break;
-		}
+		currentLang = lang_texts[lang] ? lang_texts[lang] : lang_texts.ENG;
 		localStorage.setItem("langUsed", lang);
 	}
 
-	function mobileUpdateSelectedMap(map, timeout) {
-		setTimeout(() => {
-			HeaderComponent.manualSelect(map);
-		}, timeout);
-	}
 	function updateMapFromHeader(ev) {
 		updateCurrentMap(ev, true);
 	}
-	async function updateCurrentMap(ev, flag) {
+	async function updateCurrentMap(ev, flag = false) {
 		let name = ev.detail;
 		mapTrophiesComponent?.clearInput();
 		mapFishesComponent?.clearInput();
 
 		if (!flag) {
-			mobileUpdateSelectedMap(name, 100);
+			setTimeout(() => {
+				HeaderComponent.manualSelect(map);
+			}, 100);
 		}
 		let newMap = mapList.find((map) => map.name == name);
 
-		if (name === "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
+		if (name == "null" || (currentMap && newMap && currentMap.name == newMap.name)) {
 			currentMap = null;
 			mapTrophies = [];
 			mapFishes = [];
@@ -193,45 +200,29 @@
 		if (!currentMap) return;
 		isChangingMap = true;
 		localStorage.setItem("lastOpenedMap", name);
-		var get;
 
-		let mapTrophies_tmp = cacheMapTrophies.get(name);
+		mapTrophies = await updateCachedData(cacheMapTrophies, name, `${api}fishes/${name}/trophies`);
 
-		if (mapTrophies_tmp == null) {
-			get = await fetch(`${api}fishes/${name}/trophies`);
+		mapSpots = await updateCachedData(cacheMapSpots, name, `${api}spots/${name}`);
 
-			get = await get.json();
-			mapTrophies_tmp = get.results || [];
+		mapFishes = await updateCachedData(cacheMapFishes, name, `${api}fishes/${name}`);
 
-			cacheMapTrophies.set(name, mapTrophies_tmp);
-		}
-		mapTrophies = mapTrophies_tmp;
-
-		let mapSpots_tmp = cacheMapSpots.get(name);
-
-		if (mapSpots_tmp == null) {
-			get = await fetch(`${api}spots/${name}`);
-
-			get = await get.json();
-			mapSpots_tmp = get.results || [];
-
-			cacheMapSpots.set(name, mapSpots_tmp);
-		}
-		mapSpots = mapSpots_tmp;
-
-		let mapFishes_tmp = cacheMapFishes.get(name);
-		if (mapFishes_tmp == null) {
-			get = await fetch(`${api}fishes/${name}`);
-
-			get = await get.json();
-			mapFishes_tmp = get.results || [];
-
-			cacheMapFishes.set(name, mapFishes_tmp);
-		}
-		mapFishes = mapFishes_tmp;
-		handleLanguageUpdate({ detail: localStorage.getItem("langUsed") });
 		GameMapComponent.updateMap(currentMap, mapSpots);
 		isChangingMap = false;
+	}
+
+	async function updateCachedData(cacheSet, searchedName, fallback_api) {
+		let tmp = cacheSet.get(searchedName);
+
+		if (tmp == null) {
+			let get = await fetch(fallback_api);
+
+			get = await get.json();
+			tmp = get || [];
+
+			cacheSet.set(searchedName, tmp);
+		}
+		return tmp;
 	}
 
 	function sidebarToggleHandler() {
@@ -239,14 +230,14 @@
 		document.documentElement.style.setProperty(`--sidebar-width`, `${sidebarActive ? `${200}px` : "0px"}`);
 	}
 
-	sidebarToggleHandler();
-
 	function resize(ev) {
 		if (!innerPageDiv) return;
 		pageHeight = parseFloat(innerPageDiv.offsetHeight);
 		pageWidth = parseFloat(innerPageDiv.clientWidth);
 		if (pageWidth <= 700) {
-			mobileUpdateSelectedMap(currentMap ? currentMap.name : `null`, 100);
+			setTimeout(() => {
+				HeaderComponent.manualSelect(currentMap ? currentMap.name : `null`);
+			}, 100);
 		}
 		mapSize = Math.round(pageHeight < pageWidth ? pageHeight * (mapSizePercentage - 0.07) : pageWidth * mapSizePercentage);
 		mapSize = mapSize < mapMinSize ? mapMinSize : mapSize;
@@ -262,13 +253,12 @@
 	document.addEventListener(
 		`keydown`,
 		(ev) => {
+			if (focusToggled.trophies || focusToggled.fishes) return;
 			switch (ev.key.toLocaleLowerCase()) {
 				case "m":
 					sidebarToggleHandler();
 					break;
-				case "t":
-					trophiesToggler = !trophiesToggler;
-					break;
+
 				case "f":
 					fishesToggler = !fishesToggler;
 					break;
@@ -283,13 +273,21 @@
 		},
 		{ passive: true },
 	);
+
+	var focusToggled = {
+		trophies: false,
+		fishes: false,
+	};
+	function focusToggler(flag, variable) {
+		focusToggled[variable] = flag;
+	}
 </script>
 
 <svelte:window on:resize={resize} />
 
 <Header
-	currentLangTexts={currentLang}
-	on:change_language={handleLanguageUpdate}
+	currentLanguage={currentLang}
+	on:change_language={updateLanguageTexts}
 	bind:this={HeaderComponent}
 	on:sidebarToggle={sidebarToggleHandler}
 	{mapList}
@@ -300,41 +298,24 @@
 	<Loading />
 {/if}
 <div class="left">
-	{#if mapTrophies.length != 0 || mapFishes.length != 0}
-		{#if mapTrophies.length != 0}
-			<div class="left-item">
-				<div class="left-sub-item {trophiesToggler ? `` : `hidden`}">
-					<SidebarMapFishes
-						placeholder={currentLang.search_fish}
-						title={currentLang.map_trophies}
-						bind:this={mapTrophiesComponent}
-						fishes={mapTrophies}
-						fishes_filtered={mapTrophies}
-					/>
-				</div>
-
-				<div class="toggler" passive:true on:click={() => (trophiesToggler = !trophiesToggler)}>
-					T<span style="color:whitesmoke;">{trophiesToggler ? `🡰` : `🡲`}</span>
-				</div>
-			</div>
-		{/if}
-		{#if mapFishes.length != 0}
-			<div class="left-item">
-				<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-					<SidebarMapFishes
+	{#if cacheAllFishes.length != 0 || mapTrophies.length != 0 || mapFishes.length != 0}
+		<div class="left-item">
+			<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
+				<!-- <SidebarMapFishes
+						on:focus_toggle={(ev) => focusToggler(ev, `fishes`)}
 						placeholder={currentLang.search_fish}
 						title={currentLang.map_fishes}
 						bind:this={mapFishesComponent}
 						fishes={mapFishes}
 						fishes_filtered={mapFishes}
-					/>
-				</div>
-
-				<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
-					F<span style="color:whitesmoke;">{fishesToggler ? `🡰` : `🡲`}</span>
-				</div>
+					/> -->
+				<IgFishes allFishes={cacheAllFishes} {mapFishes} {mapTrophies} />
 			</div>
-		{/if}
+
+			<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
+				F<span style="color:whitesmoke;">{fishesToggler ? `🡰` : `🡲`}</span>
+			</div>
+		</div>
 	{/if}
 </div>
 <div id="page" bind:this={innerPageDiv}>
@@ -381,9 +362,9 @@
 		left: 0;
 		top: var(--header-height);
 		z-index: 500;
-		/* display: flex;
+		display: flex;
 		flex-direction: column;
-		justify-content: center; */
+		justify-content: center;
 		/* gap: 0.1rem; */
 	}
 	/* .left-item:not(:first-child) {
