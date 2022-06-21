@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	import Donate from "./Donate.svelte";
 	import IgClock from "./IGClock.svelte";
 
@@ -27,50 +27,21 @@
 		}
 	}
 
-	const languages = {
-		it: {
-			link: `./images/italian_flag.png`,
-			value: "ITA",
-		},
-		en: {
-			link: `./images/us_flag.png`,
-			value: "ENG",
-		},
-	};
-
-	var italianEnabled = false;
-	var currentLang = languages.en;
-
 	function onLanguageClick() {
-		italianEnabled = !italianEnabled;
-		if (italianEnabled) {
-			manualSetLanguage("ITA");
-		} else manualSetLanguage("ENG");
-		event("change_language", currentLang.value);
-	}
-	export function manualSetLanguage(lang = "ENG") {
-		switch (lang) {
-			case "ENG":
-				currentLang = languages.en;
-				italianEnabled = false;
-				break;
-			case "ITA":
-				currentLang = languages.it;
-				italianEnabled = true;
-				break;
-			default:
-				currentLang = languages.en;
-				italianEnabled = false;
-				break;
+		if (currentLanguage.value == `ITA`) {
+			event("change_language", `ENG`);
+		} else {
+			event("change_language", `ITA`);
 		}
 	}
-	export let currentLangTexts;
+
+	export let currentLanguage;
 	export let mapList = [];
 </script>
 
 <header>
 	<div class="clock">
-		<h4>{currentLangTexts.ig_clock}</h4>
+		<h4>{currentLanguage.ig_clock}</h4>
 		<IgClock />
 	</div>
 
@@ -82,7 +53,11 @@
 		<div class="center-item">
 			<a href="https://rf4game.com/" class="rf4-title link" target="_blank"><h1 class="rf4-title">Russian Fishing 4</h1></a>
 			<span class="lang" on:click={onLanguageClick}
-				><img style="object-fit:contain;width:20px" src={currentLang.link} alt={currentLang.value} />{currentLang.value}</span
+				><img
+					style="object-fit:contain;width:20px"
+					src={currentLanguage.flag_link}
+					alt={currentLanguage.value}
+				/>{currentLanguage.value}</span
 			>
 		</div>
 		<div class="center-item center-item-row" style="margin-left: .5rem">
@@ -96,10 +71,10 @@
 		</div>
 	</h1>
 
-	<h1 class="maps-toggler text-center active" on:click={sidebarHandler}>{currentLangTexts ? currentLangTexts.maps : "Maps"}</h1>
+	<h1 class="maps-toggler text-center active" on:click={sidebarHandler}>{currentLanguage.maps}</h1>
 	<div class="maps-select-container">
 		<select bind:this={SELECT_MAP} name="select" class="maps-select" on:change={onItemClicked}>
-			<option value="null" selected>{currentLangTexts ? currentLangTexts.choose_map : "Choose The Map"}</option>
+			<option value="null" selected>{currentLanguage.choose_map}</option>
 			{#each mapList as map}
 				<option value={map.name}>
 					{map.default_name} [ {map.unlocked_at}+ ]
@@ -121,7 +96,6 @@
 		height: var(--header-height);
 		display: flex;
 		flex-direction: column;
-		position: relative;
 	}
 
 	header {

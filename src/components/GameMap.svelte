@@ -16,14 +16,9 @@
 			[0, 0],
 			[IMG_OUTER_SIZE, IMG_OUTER_SIZE],
 		],
-		// INNER_BOUNDS = [
-		// 	[IMG_MIN_INNER_PX, IMG_MIN_INNER_PX],
-		// 	[IMG_MAX_INNER_PX, IMG_MAX_INNER_PX],
-		// ],
 		IMG_INNER_SIZE = IMG_OUTER_SIZE - IMG_MIN_INNER_PX * 2,
 		IG_MAP_SQUARE_LENGTH = 94;
 
-	//ELEMENTS
 	var DRAW_PANEL, SEARCH_LATLNG_BTN, SEARCH_LNG, SEARCH_LAT, MAP_CNT, LEAFLET_MAP, currCoordsSpan, currDistanceDiv;
 
 	var currentMap,
@@ -41,27 +36,32 @@
 		]);
 	const minZoom = 0,
 		maxZoom = 3;
+
+	var overlayMaps = {};
 	userFirstMark = userSecondMark = userMarksLine = null;
-	var control = L.control.layers();
 	var grOverlay, spotsLayer;
 	var groundEnabled = false,
 		spotsEnabled = false;
 
-	var leafletMapTimeout;
+	var control = L.control.layers({}, {});
 
 	onMount(() => {
-		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsHandler(true), { passive: true });
+		SEARCH_LATLNG_BTN.addEventListener(`click`, () => searchCoordsFromInput(true), { passive: true });
 	});
-	export function removeMap() {
-		if (leafletMap) {
-			leafletMap.invalidateSize();
-			leafletMap.remove();
-		}
-		LEAFLET_MAP.innerHTML = ``;
-		leafletMap = null;
-		currentMap = null;
-		userFirstMark = userSecondMark = userMarksLine = null;
+
+	var currentDistanceText, currentActiveSpotsText, currentGroundsText;
+
+	$: if (currentLang.distance != currentDistanceText) {
+		setDistanceText();
 	}
+	$: if (
+		(currentLang.active_spots != currentActiveSpotsText && currentActiveSpotsText) ||
+		(currentLang.ground != currentGroundsText && currentGroundsText)
+	) {
+		updateLealfetControl(grOverlay, spotsLayer);
+	}
+
+	//MAP CONSTRUCTOR
 	export async function updateMap(map, mapSpots) {
 		removeMap();
 		if (!map) return;
@@ -90,23 +90,18 @@
 		let obj = document.createElement("object");
 		obj.type = "image/svg+xml";
 
-		var allLayers = [mapTileLayer];
-
 		leafletMap = L.map(`map`, {
 			crs: customCRS,
-			layers: allLayers,
+			layers: [mapTileLayer],
 			maxBounds: OUTER_BOUNDS,
 			doubleClickZoom: false,
 		}).setView([0, 0], !isMobile);
 
-		control = L.control.layers({}, {}).setPosition("topleft");
-		let canAddCtrl = false;
-
 		let mapSpotsMarkers = [];
 
 		mapSpots.forEach((spot) => {
-			let mapX = gameToMapCoord(spot.x, xRatio, currentMap.limits.x),
-				mapY = gameToMapCoord(spot.y, yRatio, currentMap.limits.y, true);
+			let mapX = gameCoordsToPixels(spot.x, xRatio, currentMap.limits.x),
+				mapY = gameCoordsToPixels(spot.y, yRatio, currentMap.limits.y, true);
 
 			let spotMarker = newCircleMarker(L.latLng(mapY, mapX), 4, `${spot.x}:${spot.y}`, `#ffe600`, `#e67a00`, `top`);
 			mapSpotsMarkers.push(spotMarker);
@@ -115,44 +110,209 @@
 		if (mapSpotsMarkers.length > 0) {
 			spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
 			spotsEnabled = true;
-			control.addOverlay(spotsLayer, currentLang.active_spots);
-			canAddCtrl = true;
 		}
-
 		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
 
 		if (get.status != 404) {
 			obj.data = `${api}maps/${currentMap.name}/ground`;
-
 			grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
 			groundEnabled = true;
-			control.addOverlay(grOverlay, currentLang.ground);
-			canAddCtrl = true;
 		}
-		if (canAddCtrl) {
-			control.addTo(leafletMap);
-		}
+		updateLealfetControl(grOverlay, spotsLayer);
 
 		leafletMap.on("click", onLeafletMapClick);
 
 		leafletMap.on("contextmenu", (ev) => onLeafletMapClick(ev, true));
-		leafletMap.on("mousemove", (ev) => {
-			y = IMG_OUTER_SIZE - ev.latlng.lat;
-			x = ev.latlng.lng;
-
-			let check = isCoordsInBounds(x, y);
-
-			let igX = mapToGameCoord(x, xRatio, currentMap.limits.x);
-			let igY = mapToGameCoord(y, yRatio, currentMap.limits.y);
-
-			currCoordsSpan.textContent = `${check ? `${igX}:${igY}` : `-:-`}`;
-			if (!check) return;
-			if (userFirstMark && !userSecondMark) {
-				updatePolyline(ev.latlng);
-			}
-		});
+		leafletMap.on("mousemove", onLeafletMouseMove);
 		dispatcher("can_resize");
 		leafletMap.invalidateSize();
+	}
+	export function removeMap() {
+		if (leafletMap) {
+			leafletMap.invalidateSize();
+			leafletMap.remove();
+		}
+		LEAFLET_MAP.innerHTML = ``;
+		leafletMap = null;
+		currentMap = null;
+		userFirstMark = userSecondMark = userMarksLine = null;
+	}
+
+	// UTILITY FUNCTIONS
+	export function groundToggle() {
+		if (!grOverlay) return;
+		groundEnabled = !groundEnabled;
+		if (!groundEnabled) return grOverlay.removeFrom(leafletMap);
+		grOverlay.addTo(leafletMap);
+	}
+	export function activeSpotsToggle() {
+		if (!spotsLayer) return;
+		spotsEnabled = !spotsEnabled;
+		if (!spotsEnabled) return spotsLayer.removeFrom(leafletMap);
+		spotsLayer.addTo(leafletMap);
+	}
+	var setDistanceText = (latlng) => {
+		if (!userFirstMark || (!userSecondMark && !latlng)) return;
+		let direction = getOrientation(latlng || userSecondMark.getLatLng());
+		let distance = distanceBetweenPoints(
+			userFirstMark.getLatLng(),
+			latlng || userSecondMark.getLatLng(),
+			IG_MAP_SQUARE_LENGTH / currentMap.square_distance,
+		);
+		currentDistanceText = currentLang.distance;
+		currDistanceDiv.innerHTML = `<span id="distance-prefix">${currentDistanceText}: </span><span id="distance"><b>${distance}m</b> <em><b>${
+			distance !== 0 ? direction : ``
+		}</b></em>`;
+	};
+
+	function getOrientation(latlng2) {
+		let currDirection = "";
+		if (!userFirstMark) return currDirection;
+		let latlng1 = userFirstMark.getLatLng();
+		currDirection += latlng1.lat < latlng2.lat ? "S" : "N";
+		currDirection += latlng1.lng < latlng2.lng ? "E" : "W";
+		return currDirection;
+	}
+	function distanceBetweenPoints(point_a, point_b, divider) {
+		return Math.round(Math.sqrt(Math.pow(point_b.lat - point_a.lat, 2) + Math.pow(point_b.lng - point_a.lng, 2)) / divider);
+	}
+
+	function pixelCoordsToGame(coord, ratio, limits) {
+		return Math.round((coord - IMG_MIN_INNER_PX) / ratio + limits.min);
+	}
+	function gameCoordsToPixels(coord, ratio, limits, isY = false) {
+		let tmp = (coord - limits.min) * ratio + IMG_MIN_INNER_PX;
+		return isY ? IMG_OUTER_SIZE - tmp : tmp;
+	}
+
+	function pixelCoordsAreInBounds(x, y) {
+		return x >= IMG_MIN_INNER_PX && x <= IMG_MAX_INNER_PX && y >= IMG_MIN_INNER_PX && y <= IMG_MAX_INNER_PX;
+	}
+	function gameCoordsAreInBounds(coord, limits, element) {
+		if (coord > limits.max || coord < limits.min) {
+			element.classList.add(`red-border`);
+			return false;
+		}
+		element.classList.remove(`red-border`);
+		return true;
+	}
+
+	function searchCoordsFromInput(flag = false) {
+		let igX = parseInt(SEARCH_LNG.value);
+		let igY = parseInt(SEARCH_LAT.value);
+
+		let goodCoords = gameCoordsAreInBounds(igX, currentMap.limits.x, SEARCH_LNG);
+		goodCoords = goodCoords && gameCoordsAreInBounds(igY, currentMap.limits.y, SEARCH_LAT);
+
+		if (!goodCoords) return;
+
+		SEARCH_LNG.value = ``;
+		SEARCH_LAT.value = ``;
+
+		let mapX = gameCoordsToPixels(igX, xRatio, currentMap.limits.x),
+			mapY = gameCoordsToPixels(igY, yRatio, currentMap.limits.y, true);
+		if (!pixelCoordsAreInBounds(mapX, mapY)) return;
+
+		if (userSecondMark) {
+			createUserMarkerHandler(L.latLng(mapY, mapX));
+		}
+		createUserMarkerHandler(L.latLng(mapY, mapX));
+	}
+
+	function updatePolyline(latlng, offset = 0) {
+		if (!userFirstMark) return;
+		userMarksLine.setLatLngs([userFirstMark.getLatLng(), latlng]);
+
+		setDistanceText(latlng);
+	}
+	function updateLealfetControl(groundOverlay, activeSpots) {
+		control.remove();
+		let obj = {};
+		if (activeSpots) {
+			activeSpots.removeFrom(leafletMap);
+			activeSpots.addTo(leafletMap);
+			currentActiveSpotsText = currentLang.active_spots;
+			obj[currentLang.active_spots] = activeSpots;
+		}
+		if (groundOverlay) {
+			groundOverlay.removeFrom(leafletMap);
+			groundOverlay.addTo(leafletMap);
+			currentGroundsText = currentLang.ground;
+			obj[currentLang.ground] = grOverlay;
+		}
+		control = L.control.layers({}, obj).setPosition("topleft").addTo(leafletMap);
+	}
+
+	function newCircleMarker(latlng, radius = 10, tooltipContent = null, color = `#3388ff`, fill = null, direction = `auto`) {
+		let marker = L.circleMarker(latlng, { radius, color, fillColor: fill });
+		if (tooltipContent) {
+			let tip = L.tooltip({ direction, interactive: false }).setContent(tooltipContent);
+			marker.bindTooltip(tip);
+		}
+
+		return marker;
+	}
+	function createUserMarkerHandler(latlng) {
+		if (userFirstMark && userSecondMark) {
+			userFirstMark.removeFrom(leafletMap);
+			userSecondMark.removeFrom(leafletMap);
+			userMarksLine.removeFrom(leafletMap);
+			currDistanceDiv.innerHTML = ``;
+			userFirstMark = userSecondMark = userMarksLine = null;
+			return;
+		}
+
+		let igx = pixelCoordsToGame(latlng.lng, xRatio, currentMap.limits.x),
+			igy = pixelCoordsToGame(IMG_OUTER_SIZE - latlng.lat, yRatio, currentMap.limits.y);
+
+		if (userFirstMark) {
+			userSecondMark = newCircleMarker(latlng, 5, `${igx}:${igy}`, `#40FF40`).addTo(leafletMap);
+			updatePolyline(latlng);
+
+			return;
+		}
+		userFirstMark = newCircleMarker(latlng, 7, `${igx}:${igy}`).addTo(leafletMap);
+
+		currDistanceDiv.textContent = `${currentLang.distance}: 0m`;
+
+		userMarksLine = L.polyline([userFirstMark.getLatLng(), latlng], {}).addTo(leafletMap);
+	}
+
+	async function possibleCoordsFromClipboard(ev) {
+		ev.stopPropagation();
+		ev.preventDefault();
+		var text = await navigator.clipboard.readText();
+		text = text.trim().replace(/\s\s+/g, ` `);
+		let result = new RegExp(/^(\d*)[:|\-.\s](\d*)$/im).exec(text);
+
+		if (!result || result.length < 3) return;
+
+		SEARCH_LNG.value = result[1];
+		SEARCH_LAT.value = result[2];
+	}
+
+	//DISABLE DRAGGING WHEN IN DRAW MODE
+	const mapDragToggler = () => {
+		if (leafletMap.dragging.enabled()) {
+			return leafletMap.dragging.disable();
+		}
+		leafletMap.dragging.enable();
+	};
+	// LEAFLET LISTENERS
+	function onLeafletMouseMove(ev) {
+		y = IMG_OUTER_SIZE - ev.latlng.lat;
+		x = ev.latlng.lng;
+
+		let check = pixelCoordsAreInBounds(x, y);
+
+		let igX = pixelCoordsToGame(x, xRatio, currentMap.limits.x);
+		let igY = pixelCoordsToGame(y, yRatio, currentMap.limits.y);
+
+		currCoordsSpan.textContent = `${check ? `${igX}:${igY}` : `-:-`}`;
+		if (!check) return;
+		if (userFirstMark && !userSecondMark) {
+			updatePolyline(ev.latlng);
+		}
 	}
 	function onLeafletMapClick(ev, rightClicked = false) {
 		y = ev.latlng.lat;
@@ -170,149 +330,9 @@
 			}
 			return;
 		}
-		if (!isCoordsInBounds(x, y)) return;
+		if (!pixelCoordsAreInBounds(x, y)) return;
 
 		createUserMarkerHandler(ev.latlng);
-	}
-	function newCircleMarker(latlng, radius = 10, tooltipContent = null, color = `#3388ff`, fill = null, direction = `auto`) {
-		let marker = L.circleMarker(latlng, { radius, color, fillColor: fill });
-		if (tooltipContent) {
-			let tip = L.tooltip({ direction, interactive: false }).setContent(tooltipContent);
-			marker.bindTooltip(tip);
-		}
-
-		return marker;
-	}
-
-	function mapToGameCoord(coord, ratio, limits) {
-		return Math.round((coord - IMG_MIN_INNER_PX) / ratio + limits.min);
-	}
-	function gameToMapCoord(coord, ratio, limits, isY = false) {
-		let tmp = (coord - limits.min) * ratio + IMG_MIN_INNER_PX;
-		return isY ? IMG_OUTER_SIZE - tmp : tmp;
-	}
-
-	function isCoordsInBounds(x, y) {
-		return x >= IMG_MIN_INNER_PX && x <= IMG_MAX_INNER_PX && y >= IMG_MIN_INNER_PX && y <= IMG_MAX_INNER_PX;
-	}
-
-	function searchCoordsHandler(flag = false) {
-		let igX = parseInt(SEARCH_LNG.value);
-		let igY = parseInt(SEARCH_LAT.value);
-
-		let goodCoords = searchCoordInBounds(igX, currentMap.limits.x, SEARCH_LNG);
-		goodCoords = goodCoords && searchCoordInBounds(igY, currentMap.limits.y, SEARCH_LAT);
-
-		if (!goodCoords) return;
-
-		SEARCH_LNG.value = ``;
-		SEARCH_LAT.value = ``;
-
-		let mapX = gameToMapCoord(igX, xRatio, currentMap.limits.x),
-			mapY = gameToMapCoord(igY, yRatio, currentMap.limits.y, true);
-		if (!isCoordsInBounds(mapX, mapY)) return;
-
-		if (userSecondMark) {
-			createUserMarkerHandler(L.latLng(mapY, mapX));
-		}
-		createUserMarkerHandler(L.latLng(mapY, mapX));
-	}
-
-	function createUserMarkerHandler(latlng) {
-		if (userFirstMark && userSecondMark) {
-			userFirstMark.removeFrom(leafletMap);
-			userSecondMark.removeFrom(leafletMap);
-			userMarksLine.removeFrom(leafletMap);
-			currDistanceDiv.innerHTML = ``;
-			userFirstMark = userSecondMark = userMarksLine = null;
-			return;
-		}
-
-		let igx = mapToGameCoord(latlng.lng, xRatio, currentMap.limits.x),
-			igy = mapToGameCoord(IMG_OUTER_SIZE - latlng.lat, yRatio, currentMap.limits.y);
-
-		if (userFirstMark) {
-			userSecondMark = newCircleMarker(latlng, 5, `${igx}:${igy}`, `#40FF40`).addTo(leafletMap);
-			updatePolyline(latlng);
-
-			return;
-		}
-		userFirstMark = newCircleMarker(latlng, 7, `${igx}:${igy}`).addTo(leafletMap);
-
-		currDistanceDiv.textContent = `${currentLang.distance}: 0m`;
-
-		userMarksLine = L.polyline([userFirstMark.getLatLng(), latlng], {}).addTo(leafletMap);
-	}
-
-	function updatePolyline(latlng, offset = 0) {
-		if (!userFirstMark) return;
-		// let midpoint = midpointBetweenLatlng(userFirstMark.getLatLng(), latlng);
-
-		let direction = getOrientation(latlng);
-
-		userMarksLine.setLatLngs([userFirstMark.getLatLng(), latlng]);
-
-		let distance = distanceBetweenPoints(userFirstMark.getLatLng(), latlng, IG_MAP_SQUARE_LENGTH / currentMap.square_distance);
-		currDistanceDiv.innerHTML = `<span id="distance-prefix">${currentLang.distance}: </span><span id="distance"><b>${distance}m</b> <em><b>${
-			distance !== 0 ? direction : ``
-		}</b></em>`;
-	}
-
-	function getOrientation(latlng2) {
-		let currDirection = "";
-		if (!userFirstMark) return currDirection;
-		let latlng1 = userFirstMark.getLatLng();
-		currDirection += latlng1.lat < latlng2.lat ? "S" : "N";
-		currDirection += latlng1.lng < latlng2.lng ? "E" : "W";
-		return currDirection;
-	}
-
-	function distanceBetweenPoints(point_a, point_b, divider) {
-		return Math.round(Math.sqrt(Math.pow(point_b.lat - point_a.lat, 2) + Math.pow(point_b.lng - point_a.lng, 2)) / divider);
-	}
-
-	function searchCoordInBounds(coord, limits, element) {
-		if (coord > limits.max || coord < limits.min) {
-			element.classList.add(`red-border`);
-			return false;
-		}
-
-		element.classList.remove(`red-border`);
-		return true;
-	}
-
-	//DISABLE DRAGGING WHEN IN DRAW MODE
-	const mapDragToggler = () => {
-		if (leafletMap.dragging.enabled()) {
-			return leafletMap.dragging.disable();
-		}
-		leafletMap.dragging.enable();
-	};
-
-	async function possibleCoordsFromClipboard(ev) {
-		ev.stopPropagation();
-		ev.preventDefault();
-		var text = await navigator.clipboard.readText();
-		text = text.trim().replace(/\s\s+/g, ` `);
-		let result = new RegExp(/^(\d*)[:|\-.\s](\d*)$/im).exec(text);
-
-		if (!result || result.length < 3) return;
-
-		SEARCH_LNG.value = result[1];
-		SEARCH_LAT.value = result[2];
-	}
-
-	export function groundToggle() {
-		if (!grOverlay) return;
-		groundEnabled = !groundEnabled;
-		if (!groundEnabled) return grOverlay.removeFrom(leafletMap);
-		grOverlay.addTo(leafletMap);
-	}
-	export function activeSpotsToggle() {
-		if (!spotsLayer) return;
-		spotsEnabled = !spotsEnabled;
-		if (!spotsEnabled) return spotsLayer.removeFrom(leafletMap);
-		spotsLayer.addTo(leafletMap);
 	}
 
 	//MAP SIZING

@@ -115,7 +115,7 @@
 	}
 
 	/* MOBILE DEVICES */
-	@media screen and (max-width: 700px) {
+	@media screen and (max-width: 730px) {
 		:root {
 			--sidebar-width: 0px !important;
 		}
