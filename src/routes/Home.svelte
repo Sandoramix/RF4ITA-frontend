@@ -13,30 +13,35 @@
 		ITA: {
 			value: `ITA`,
 			flag_link: `./images/italian_flag.png`,
-			map_trophies: `Trofei della mappa`,
-			map_fishes: `Pesci della mappa`,
+			fish: `Pesci`,
+			this_map_trophies: `Trofei della mappa`,
+			this_map_fish: `Pesci della mappa`,
+			search_fish: `Cerca il pesce`,
+
 			maps: `Mappe`,
 			coords: `Coordinate`,
 			search_coords: `Cerca coordinate`,
 			distance: `Distanza`,
 			active_spots: `Spot attivi`,
 			ground: `Tipo di fondale`,
-			search_fish: `Cerca il pesce`,
+
 			choose_map: `Scegli la mappa`,
 			ig_clock: `Ora IG`,
 		},
 		ENG: {
 			value: `ENG`,
 			flag_link: `./images/us_flag.png`,
-			map_trophies: `Map Trophies`,
-			map_fishes: `All map fishes`,
+			fish: `Fish`,
+			this_map_trophies: `Map trophies`,
+			this_map_fish: `Map fish`,
+			search_fish: `Search for fish`,
 			maps: `Maps`,
 			coords: `Coords`,
 			search_coords: `Search coords`,
 			distance: `Distance`,
 			active_spots: `Active spots`,
 			ground: `Ground`,
-			search_fish: `Search for fish`,
+
 			choose_map: `Choose the map`,
 			ig_clock: `IG Clock`,
 		},
@@ -69,7 +74,7 @@
 	//STATES
 	var mapListIsLoading = true,
 		isChangingMap = false,
-		fishesToggler = true,
+		fishesToggler = false,
 		isMobile = false;
 
 	var innerPageDiv;
@@ -309,7 +314,7 @@
 						fishes={mapFishes}
 						fishes_filtered={mapFishes}
 					/> -->
-				<IgFishes allFishes={cacheAllFishes} {mapFishes} {mapTrophies} />
+				<IgFishes allFishes={cacheAllFishes} {mapFishes} {mapTrophies} currentLanguage={currentLang} />
 			</div>
 
 			<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>

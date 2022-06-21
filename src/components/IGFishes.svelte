@@ -3,6 +3,7 @@
 
 	var event = createEventDispatcher();
 
+	export var currentLanguage;
 	export var allFishes = [];
 	export var mapFishes = [];
 	export var mapTrophies = [];
@@ -29,8 +30,15 @@
 {#if visible}
 	<div class="container">
 		<div class="header">
-			<h3>Fishes</h3>
-			<input on:focus={() => onFocusToggle(true)} on:blur={() => onFocusToggle(false)} type="text" class="search_fish" bind:value={input} />
+			<h3>{currentLanguage.fish}</h3>
+			<input
+				on:focus={() => onFocusToggle(true)}
+				on:blur={() => onFocusToggle(false)}
+				type="text"
+				class="search_fish"
+				bind:value={input}
+				placeholder={currentLanguage.search_fish}
+			/>
 
 			<div class="filters">
 				<label class="filter {mapTrophies.length == 0 ? `disabled` : ``}" value="trophy" for="trophy_toggler"
@@ -41,7 +49,7 @@
 						bind:checked={mapTrophiesToggler}
 						id="trophy_toggler"
 						name="filter"
-					/>Map trophies</label
+					/>{currentLanguage.this_map_trophies}</label
 				>
 
 				<label class="filter {mapTrophiesToggler ? `disabled` : ``}" value="fish" for="fish_toggler"
@@ -52,7 +60,7 @@
 						bind:checked={mapFishesToggler}
 						id="fish_toggler"
 						name="filter"
-					/>Map fish</label
+					/>{currentLanguage.this_map_fish}</label
 				>
 			</div>
 		</div>
@@ -121,11 +129,11 @@
 	}
 	.filter.disabled .filter input,
 	.filter.disabled {
-		color: gray;
+		color: #808080;
 	}
 	.filter.disabled:hover {
 		cursor: not-allowed !important;
-		color: gainsboro;
+		color: #585858;
 	}
 	.filter.disabled .line {
 		display: block;
