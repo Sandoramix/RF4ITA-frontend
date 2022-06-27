@@ -70,12 +70,16 @@
 		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
 
 		// mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
-		mapTileLayer = L.tileLayer(`/images/map_tiles/${currentMap.name}/{z}_{x}_{y}.jpg`, {
-			minZoom,
-			maxZoom,
-			noWrap: true,
-			attribution: 'Map inspired by &copy; <a href="https://rf4.info">rf4.info</a>',
-		});
+		// mapTileLayer = L.tileLayer(`/images/map_tiles/${currentMap.name}/{z}_{x}_{y}.jpg`, {
+		mapTileLayer = L.tileLayer(
+			`https://raw.githubusercontent.com/Sandoramix/RF4ITA-frontend/master/static/map_tiles/${currentMap.name}/{z}_{x}_{y}.jpg`,
+			{
+				minZoom,
+				maxZoom,
+				noWrap: true,
+				attribution: 'Map inspired by &copy; <a href="https://rf4.info">rf4.info</a>',
+			},
+		);
 
 		var customCRS = L.extend(L.CRS.Simple, {
 			projection: L.extend(L.Projection.LonLat, {
