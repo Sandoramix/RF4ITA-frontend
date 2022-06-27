@@ -69,7 +69,8 @@
 		xRatio = IMG_INNER_SIZE / (currentMap.limits.x.max - currentMap.limits.x.min);
 		yRatio = IMG_INNER_SIZE / (currentMap.limits.y.max - currentMap.limits.y.min);
 
-		mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
+		// mapTileLayer = L.tileLayer(`${api}maps/${currentMap.name}/{z}_{x}_{y}.jpg`, {
+		mapTileLayer = L.tileLayer(`/images/map_tiles/${currentMap.name}/{z}_{x}_{y}.jpg`, {
 			minZoom,
 			maxZoom,
 			noWrap: true,
@@ -111,13 +112,13 @@
 			spotsLayer = L.layerGroup(mapSpotsMarkers).addTo(leafletMap);
 			spotsEnabled = true;
 		}
-		let get = await fetch(`${api}maps/${currentMap.name}/ground`);
+		// let get = await fetch(`${api}maps/${currentMap.name}/ground`);
 
-		if (get.status != 404) {
-			obj.data = `${api}maps/${currentMap.name}/ground`;
-			grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
-			groundEnabled = true;
-		}
+		// if (get.status != 404) {
+		// 	obj.data = `${api}maps/${currentMap.name}/ground`;
+		// 	grOverlay = L.svgOverlay(obj, OUTER_BOUNDS).addTo(leafletMap);
+		// 	groundEnabled = true;
+		// }
 		updateLealfetControl(grOverlay, spotsLayer);
 
 		leafletMap.on("click", onLeafletMapClick);
