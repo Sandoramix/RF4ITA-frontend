@@ -63,7 +63,7 @@
 		<div class="center-item center-item-row" style="margin-left: .5rem">
 			<div class="spam author">
 				<p>Made by</p>
-				<a class="link" target="_blank" href="https://linktr.ee/sandoramix">@Sandoramix</a>
+				<a class="link" target="_blank" href="https://ko-fi.com/sandoramix">@Sandoramix</a>
 			</div>
 			<div class="donate-cnt">
 				<Donate />

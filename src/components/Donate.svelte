@@ -26,7 +26,7 @@
 	// async function popMessage() {}
 </script>
 
-<a href="https://streamlabs.com/sandoramix/tip" target="_blank"><img class="donate-img" src="./images/donate.png" alt="donate" /> </a>
+<a href="https://ko-fi.com/sandoramix" target="_blank"><img class="donate-img" src="./images/donate.png" alt="donate" /> </a>
 
 <!-- <div class="donate-popup-cnt">
 	<div class="donate-popup" />
