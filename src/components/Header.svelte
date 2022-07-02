@@ -77,7 +77,7 @@
 			<option value="null" selected>{currentLanguage.choose_map}</option>
 			{#each mapList as map}
 				<option value={map.name}>
-					{map.default_name} [ {map.unlocked_at}+ ]
+					{currentLanguage.value == "ITA" ? map.formatted_name_it : map.formatted_name} [ {map.unlocked_at}+ ]
 				</option>
 			{/each}
 		</select>

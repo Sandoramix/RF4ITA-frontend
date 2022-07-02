@@ -13,9 +13,7 @@
 
 	$: currentlyShowingFishes = mapTrophiesToggler ? mapTrophies : mapFishesToggler ? mapFishes : allFishes;
 
-	$: currentlyFilteredShowingFishes = currentlyShowingFishes.filter((fish) =>
-		fish.fish_name.toLowerCase().includes(input ? input.toLowerCase() : ``),
-	);
+	$: currentlyFilteredShowingFishes = currentlyShowingFishes.filter((fish) => fish.name.toLowerCase().includes(input ? input.toLowerCase() : ``));
 
 	var mapTrophiesToggler = false;
 	var mapFishesToggler = true;
@@ -67,25 +65,19 @@
 		<ul id="fishes">
 			{#each currentlyFilteredShowingFishes as fish}
 				<li class="item">
-					<span class="fish">{fish.default_name}</span>
+					<span class="fish">{currentLanguage.value == "ITA" ? fish.name_it : fish.name}</span>
 					<div class="fish-sub">
 						<div>
 							<img src="images/trophy.png" alt="Trophy" />
-							<span
-								>{fish.fish_trophy != null
-									? fish.fish_trophy < 1000
-										? `${fish.fish_trophy}gr`
-										: `${fish.fish_trophy / 1000}kg`
-									: `?`}
-							</span>
+							<span>{fish.trophy != null ? (fish.trophy < 1000 ? `${fish.trophy}gr` : `${fish.trophy / 1000}kg`) : `?`} </span>
 						</div>
 						<div>
 							<img src="images/super-trophy.png" alt="Trophy" />
 							<span>
-								{fish.fish_super_trophy != null
-									? fish.fish_super_trophy < 1000
-										? `${fish.fish_super_trophy}gr`
-										: `${fish.fish_super_trophy / 1000}kg`
+								{fish.super_trophy != null
+									? fish.super_trophy < 1000
+										? `${fish.super_trophy}gr`
+										: `${fish.super_trophy / 1000}kg`
 									: `?`}
 							</span>
 						</div>

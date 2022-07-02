@@ -155,21 +155,6 @@
 	function updateLanguageTexts(ev) {
 		let lang = ev.detail;
 
-		let append_text = lang == `ITA` ? `_it` : ``;
-
-		mapList = mapList.map((m) => {
-			m.default_name = m[`formatted_name${append_text}`];
-			return m;
-		});
-		mapFishes = mapFishes.map((f) => {
-			f.default_name = f[`fish_name${append_text}`];
-			return f;
-		});
-		mapTrophies = mapTrophies.map((f) => {
-			f.default_name = f[`fish_name${append_text}`];
-			return f;
-		});
-
 		currentLang = lang_texts[lang] ? lang_texts[lang] : lang_texts.ENG;
 		localStorage.setItem("langUsed", lang);
 	}
@@ -331,7 +316,7 @@
 	</div>
 </div>
 
-<Sidebar {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
+<Sidebar currentLanguage={currentLang} {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
 
 <style>
 	.homepage-footer {

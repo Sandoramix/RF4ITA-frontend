@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from "svelte";
 
 	const event = createEventDispatcher();
-
+	export let currentLanguage;
 	export let visible = true;
 	export let mapList = [];
 
@@ -31,7 +31,7 @@
 					onItemClicked(map);
 				}}
 			>
-				{map.default_name}
+				{currentLanguage.value == "ITA" ? map.formatted_name_it : map.formatted_name}
 				<span class="maps-list-sub-item">LvL: {map.unlocked_at}+</span>
 			</div>
 		{/each}
