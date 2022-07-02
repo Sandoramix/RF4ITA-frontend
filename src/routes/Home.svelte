@@ -48,7 +48,6 @@
 	};
 	var currentLang = lang_texts.ENG;
 
-	export const params = {};
 	//COMPONENTS
 	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
 
