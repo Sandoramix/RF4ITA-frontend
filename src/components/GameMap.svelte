@@ -231,6 +231,7 @@
 		setDistanceText(latlng);
 	}
 	function updateLealfetControl(groundOverlay, activeSpots) {
+		if (!activeSpots && !groundOverlay) return;
 		control.remove();
 		let obj = {};
 		if (activeSpots) {
@@ -390,7 +391,7 @@
 		width: 100%;
 		height: 100%;
 		user-select: none;
-		z-index: 300;
+
 		position: relative;
 	}
 
@@ -401,7 +402,7 @@
 		width: 400px;
 		height: 40px;
 		background-color: transparent;
-		z-index: 600;
+		z-index: 50;
 		display: flex;
 		justify-content: end;
 		align-items: center;
@@ -414,7 +415,7 @@
 		position: absolute;
 		bottom: 1.1rem;
 		left: 50px;
-		z-index: 600;
+
 		display: flex;
 		justify-content: space-evenly;
 		background-color: #3f3f3f10;
@@ -462,7 +463,6 @@
 		text-shadow: -1px 2px 1px #5e5e5eda;
 		padding: 0.5rem;
 		gap: 0.25rem;
-		z-index: 600;
 	}
 
 	.shadow {
