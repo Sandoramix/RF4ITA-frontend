@@ -321,7 +321,7 @@
 		position: relative;
 		display: flex;
 
-		transition: width 0.4s ease-in-out;
+		transition: width 0.3s ease-in-out;
 		align-items: center;
 		justify-content: center;
 	}
