@@ -53,7 +53,7 @@
 		top: var(--header-height);
 
 		right: 0;
-		height: 100%;
+		height: calc(100vh - 80px);
 
 		width: 200px;
 		background-color: var(--sidebar-bg);
@@ -61,11 +61,11 @@
 		overflow-y: auto;
 		overflow-x: hidden;
 		transform: translateX(0px);
-		transition: transform 0.5s ease-in-out;
+		transition: transform 0.3s ease-in-out;
 	}
 
 	.right-sidebar.hidden {
-		transform: translateX(150%);
+		transform: translateX(100%);
 	}
 
 	.maps-list-container {
