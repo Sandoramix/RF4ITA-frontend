@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	import { createEventDispatcher, onMount } from "svelte";
 
 	const dispatch = createEventDispatcher();
@@ -155,7 +155,7 @@
 
 <style>
 	#draw-canvas {
-		z-index: 999;
+		z-index: 55;
 		top: 0;
 		left: 0;
 		position: absolute;
@@ -163,7 +163,7 @@
 	}
 
 	#draw-tools__container {
-		z-index: 1000;
+		z-index: 56;
 		position: absolute;
 		bottom: 20px;
 		left: 12px;
