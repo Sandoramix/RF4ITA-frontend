@@ -48,10 +48,10 @@
 	<h1 class="header-center-cnt">
 		<div class="center-item spam discord">
 			<p>Community's</p>
-			<a class="link" target="_blank" href="https://discord.gg/luke4316">Discord</a>
+			<a class="link" target="_blank" rel="noreferrer" href="https://discord.gg/luke4316">Discord</a>
 		</div>
 		<div class="center-item">
-			<a href="https://rf4game.com/" class="rf4-title link" target="_blank"><h1 class="rf4-title">Russian Fishing 4</h1></a>
+			<a href="https://rf4game.com/" class="rf4-title link" rel="noreferrer" target="_blank"><h1 class="rf4-title">Russian Fishing 4</h1></a>
 			<span class="lang" on:click={onLanguageClick}
 				><img
 					style="object-fit:contain;width:20px"
@@ -63,7 +63,7 @@
 		<div class="center-item center-item-row" style="margin-left: .5rem">
 			<div class="spam author">
 				<p>Made by</p>
-				<a class="link" target="_blank" href="https://ko-fi.com/sandoramix">@Sandoramix</a>
+				<a class="link" target="_blank" href="https://ko-fi.com/sandoramix" rel="noreferrer">@Sandoramix</a>
 			</div>
 			<div class="donate-cnt">
 				<Donate />
@@ -242,19 +242,19 @@
 		.clock {
 			max-width: 5%;
 			min-width: 60px;
-			font-size: 0.8rem;
-		}
-		.rf4-title {
-			font-size: 1.1rem;
-		}
-		.center-item .rf4-title.link {
-			font-size: 1.1rem;
-		}
-		.header-center-cnt {
 			font-size: 0.9rem;
 		}
+		.rf4-title {
+			font-size: 1.2rem;
+		}
+		.center-item .rf4-title.link {
+			font-size: 1.2rem;
+		}
+		.header-center-cnt {
+			font-size: 1rem;
+		}
 		.link {
-			font-size: 0.7rem;
+			font-size: 0.8rem;
 		}
 	}
 	@media screen and (max-width: 550px) {
@@ -269,8 +269,8 @@
 			height: calc(var(--header-height) * 0.75);
 		}
 	}
-	@media screen and (max-width: 670px) {
-		.spam.author {
+	@media screen and (max-width: 700px) {
+		.donate-cnt {
 			display: none !important;
 		}
 	}
