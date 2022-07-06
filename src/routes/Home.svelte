@@ -1,6 +1,8 @@
 <script>
-	import { onMount } from "svelte";
+	import { Base64 } from "js-base64";
 
+	import { onMount } from "svelte";
+	export let params = {};
 	import GameMap from "../components/GameMap.svelte";
 	import Header from "../components/Header.svelte";
 	import IgFishes from "../components/IGFishes.svelte";
@@ -34,7 +36,7 @@
 			fish: `Fish`,
 			this_map_trophies: `Map trophies`,
 			this_map_fish: `Map fish`,
-			search_fish: `Search for fish`,
+			search_fish: `Search fish`,
 			maps: `Maps`,
 			coords: `Coords`,
 			search_coords: `Search coords`,
@@ -49,7 +51,7 @@
 	var currentLang = lang_texts.ENG;
 
 	//COMPONENTS
-	var GameMapComponent, HeaderComponent, mapTrophiesComponent, mapFishesComponent;
+	var GameMapComponent, HeaderComponent, IGFishesComponent;
 
 	//MAP OBJECTS
 	var currentMap,
@@ -98,24 +100,26 @@
 			fetch(`${api}fishes/`)
 				.then((res) => res.json())
 				.then((data) => {
-					cacheAllFishes = data;
+					cacheAllFishes = [...data];
 
 					localStorage.setItem(
 						`all_fishes`,
 						JSON.stringify({
 							date: last_change,
-							fishes: data,
+							fishes: Base64.encode(JSON.stringify(data)),
 						}),
 					);
 				});
 		};
+		let x = JSON.parse(localStorage.getItem(`all_fishes`));
 
-		let temp = JSON.parse(localStorage.getItem(`all_fishes`));
-
-		if (!temp) {
+		if (!x) {
 			fetch_fishes();
 		} else {
-			if (new Date() > new Date(last_change)) {
+			x.fishes = JSON.parse(Base64.decode(x.fishes));
+
+			let temp = x;
+			if (temp.date > new Date(last_change)) {
 				fetch_fishes();
 			} else {
 				cacheAllFishes = temp.fishes;
@@ -164,9 +168,6 @@
 	}
 	async function updateCurrentMap(ev, flag = false) {
 		let name = ev.detail;
-		mapTrophiesComponent?.clearInput();
-		mapFishesComponent?.clearInput();
-
 		if (!flag) {
 			setTimeout(() => {
 				HeaderComponent.manualSelect(map);
@@ -181,6 +182,7 @@
 			mapSpots = [];
 			localStorage.setItem("lastOpenedMap", null);
 			GameMapComponent.removeMap();
+
 			return;
 		}
 
@@ -249,7 +251,7 @@
 					break;
 
 				case "f":
-					fishesToggler = !fishesToggler;
+					IGFishesComponent.toggle();
 					break;
 
 				case "g":
@@ -286,27 +288,9 @@
 {#if mapListIsLoading}
 	<Loading />
 {/if}
-<div class="left">
-	{#if cacheAllFishes.length != 0 || mapTrophies.length != 0 || mapFishes.length != 0}
-		<div class="left-item">
-			<div class="left-sub-item {fishesToggler ? `` : `hidden`}">
-				<!-- <SidebarMapFishes
-						on:focus_toggle={(ev) => focusToggler(ev, `fishes`)}
-						placeholder={currentLang.search_fish}
-						title={currentLang.map_fishes}
-						bind:this={mapFishesComponent}
-						fishes={mapFishes}
-						fishes_filtered={mapFishes}
-					/> -->
-				<IgFishes allFishes={cacheAllFishes} {mapFishes} {mapTrophies} currentLanguage={currentLang} />
-			</div>
 
-			<div class="toggler" passive:true on:click={() => (fishesToggler = !fishesToggler)}>
-				F<span style="color:whitesmoke;">{fishesToggler ? `🡰` : `🡲`}</span>
-			</div>
-		</div>
-	{/if}
-</div>
+<IgFishes bind:this={IGFishesComponent} allFishes={cacheAllFishes} {mapFishes} {mapTrophies} currentLanguage={currentLang} />
+
 <div id="page" bind:this={innerPageDiv}>
 	{#if isChangingMap}
 		<Loading />
@@ -319,7 +303,7 @@
 <Sidebar currentLanguage={currentLang} {currentMap} visible={sidebarActive} {mapList} on:change_map={updateCurrentMap} />
 
 <style>
-	.homepage-footer {
+	/* .homepage-footer {
 		position: absolute;
 		bottom: 0;
 		left: 0;
@@ -328,7 +312,7 @@
 		height: 100px;
 		display: flex;
 		justify-content: center;
-	}
+	} */
 
 	#page {
 		width: calc(100% - var(--sidebar-width));
@@ -344,73 +328,9 @@
 		justify-content: center;
 	}
 
-	.left {
-		height: calc(100vh - var(--header-height));
-
-		position: fixed;
-		left: 0;
-		top: var(--header-height);
-		z-index: 500;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		/* gap: 0.1rem; */
-	}
-	/* .left-item:not(:first-child) {
-		/* margin-top: 0.5rem; 
-	} */
-	.left-item {
-		display: flex;
-		position: relative;
-		height: 50%;
-	}
-	.left-item > * {
-		width: 275px;
-	}
-
-	.toggler {
-		height: 6rem;
-		width: 2.5rem;
-		background-color: var(--red-dark-color);
-		border-right: 1px solid black;
-
-		border-top: 1px solid black;
-
-		border-bottom: 1px solid black;
-		cursor: pointer;
-		padding: 0.5rem;
-		text-align: center;
-		writing-mode: vertical-rl;
-		text-orientation: upright;
-		border-top-right-radius: 5px;
-		border-bottom-right-radius: 5px;
-		user-select: none;
-		font-weight: bold;
-		position: absolute;
-		top: 0;
-		left: var(--map-left-panel-width);
-		transition: left 0.5s ease-in-out;
-	}
-	.toggler:hover {
-		background-color: var(--red-color);
-	}
-
-	.left-sub-item {
-		position: absolute;
-
-		transform: translateX(0);
-		transition: transform 0.5s ease-in-out;
-	}
-	.left-sub-item.hidden {
-		transform: translateX(-100%);
-	}
-	.left-sub-item.hidden + .toggler {
-		left: 0px;
-	}
-
 	#gmap {
 		margin-top: 0.5rem;
-		z-index: 100;
+
 		align-self: center;
 	}
 </style>
