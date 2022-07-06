@@ -116,13 +116,11 @@
 		if (!x) {
 			fetch_fishes();
 		} else {
-			x.fishes = JSON.parse(Base64.decode(x.fishes));
-
-			let temp = x;
-			if (temp.date > new Date(last_change)) {
+			if (new Date(x.date) < new Date(last_change)) {
 				fetch_fishes();
 			} else {
-				cacheAllFishes = temp.fishes;
+				x.fishes = JSON.parse(Base64.decode(x.fishes));
+				cacheAllFishes = x.fishes;
 			}
 		}
 
